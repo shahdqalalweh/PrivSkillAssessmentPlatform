@@ -1,14 +1,20 @@
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SkillAssessmentPlatform.Application.Mapping;
+using SkillAssessmentPlatform.Application.Services;
 using SkillAssessmentPlatform.Core.Entities.Users;
+using SkillAssessmentPlatform.Core.Interfaces;
 using SkillAssessmentPlatform.Infrastructure.Data;
+using SkillAssessmentPlatform.Infrastructure.Repositories;
+using System.Data;
 
 namespace SkillAssessmentPlatform.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -21,14 +27,31 @@ namespace SkillAssessmentPlatform.API
 
 
             builder.Services.AddIdentity<User, IdentityRole>()
-               .AddEntityFrameworkStores<AppDbContext>()
+            .AddEntityFrameworkStores<AppDbContext>()
                .AddDefaultTokenProviders();
+
+            builder.Services.AddLogging();
+            //builder.Services.AddScoped<IRepository<T>, Repository<T>>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
+            builder.Services.AddScoped<IExaminerRepository, ExaminerRepository>();
+            builder.Services.AddScoped<AuthService>();
+
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                await SeedRoles(roleManager);
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -37,7 +60,7 @@ namespace SkillAssessmentPlatform.API
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
@@ -45,6 +68,18 @@ namespace SkillAssessmentPlatform.API
             app.MapControllers();
 
             app.Run();
+        }
+        async static Task SeedRoles(RoleManager<IdentityRole> roleManager)
+        {
+            string[] roleNames = { Actors.Admin, Actors.Examiner, Actors.Applicant, Actors.SeniorExaminer };
+
+            foreach (var roleName in roleNames)
+            {
+                if (!await roleManager.RoleExistsAsync(roleName))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+            }
         }
     }
 }

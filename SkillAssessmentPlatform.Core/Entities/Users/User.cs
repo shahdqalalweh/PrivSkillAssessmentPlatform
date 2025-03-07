@@ -7,7 +7,13 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Core.Entities.Users
 {
-    public class User : IdentityUser
+     public class User : IdentityUser
     {
+        public string FullName { get; set; }
+        public DateTime DateOfBirth { get; set; }
+
+
+        public Examiner? Examiner { get; set; }
+        public Applicant? Applicant { get; set; }
     }
 }
