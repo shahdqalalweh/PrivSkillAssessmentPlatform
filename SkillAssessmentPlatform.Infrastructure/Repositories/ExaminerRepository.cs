@@ -22,11 +22,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             _userManager = userManager;
             _context = context;
         }
-        public void Add(Examiner examiner)
-        {
-            _context.Examiners.Add(examiner);
-            _context.SaveChanges();
-        }
+    
         public async Task<IEnumerable<Examiner>> GetAllExaminersAsync()
         {
             return await _userManager.Users

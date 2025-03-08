@@ -47,6 +47,32 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "fc573bc0-2e2f-4537-b460-6f4cae915cc5",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "e1c9c5a6-0a14-482a-88df-3e6f2d349ce2",
+                            Name = "Examiner",
+                            NormalizedName = "EXAMINER"
+                        },
+                        new
+                        {
+                            Id = "55dc4ec3-ad6d-4d28-baad-a062d5e11ce8",
+                            Name = "SeniorExaminer",
+                            NormalizedName = "SENIOREXAMINER"
+                        },
+                        new
+                        {
+                            Id = "4e541a99-38c6-4041-b935-9d887b9cc8ad",
+                            Name = "Applicant",
+                            NormalizedName = "APPLICANT"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -167,7 +193,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("DateOfBirth")
+                    b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -213,6 +239,9 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("UserType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -315,31 +344,20 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Applicant", b =>
                 {
-                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", "User")
-                        .WithOne("Applicant")
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", null)
+                        .WithOne()
                         .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Users.Applicant", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Examiner", b =>
                 {
-                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", "User")
-                        .WithOne("Examiner")
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", null)
+                        .WithOne()
                         .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.User", b =>
-                {
-                    b.Navigation("Applicant");
-
-                    b.Navigation("Examiner");
                 });
 #pragma warning restore 612, 618
         }

@@ -9,7 +9,6 @@ namespace SkillAssessmentPlatform.Core.Interfaces
 {
     public interface IExaminerRepository 
     {
-        void Add(Examiner examiner);
         Task<IEnumerable<Examiner>> GetAllExaminersAsync();
         Task<Examiner>? GetExaminerByIdAsync(string id);
         Task CreateExaminerAsync(Examiner examiner);

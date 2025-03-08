@@ -28,38 +28,6 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             _logger = logger;
         }
 
-        public async void Add(Applicant applicant)
-        {   
-            _logger.LogInformation("Add -ApplecantRepo");
-            await _dbContext.SaveChangesAsync();
-            _logger.LogInformation("save context test"); 
-
-            if (applicant == null)
-            {
-                _logger.LogInformation("applicant obj null");
-            }
-            
-            var existingUser = _dbContext.Users.Find(applicant.Id);
-            if (existingUser != null)
-            {
-                _dbContext.Entry(existingUser).State = EntityState.Detached;
-                _logger.LogInformation("user deached");
-            }
-
-            await _dbContext.Applicants.AddAsync(applicant);
-            _logger.LogInformation("applicant added"); //<== No problem until here
-            try
-            {
-                await _dbContext.SaveChangesAsync();  
-                _logger.LogInformation("Applicant saved successfully.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error saving applicant: " + ex.Message);
-            }
-
-        }
-
         public async Task<IEnumerable<Applicant>> GetAllApplicantsAsync()
         {
             return await _userManager.Users

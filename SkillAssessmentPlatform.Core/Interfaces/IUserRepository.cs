@@ -9,13 +9,10 @@ namespace SkillAssessmentPlatform.Core.Interfaces
 {
     public interface IUserRepository 
     {
-        Task<string> RegisterApplicantAsync(User user, string password);
-        Task<string> RegisterExaminerAsync(User user, string password);
         Task<User>? GetUserByIdAsync(string id);
         Task<IEnumerable<User>> GetAllUsersAsync();
         Task UpdateUserAsync(User user);
         Task DeleteUserAsync(string id);
-
 
     }
 }

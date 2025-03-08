@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SkillAssessmentPlatform.Application.DTOs;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Interfaces;
+using SkillAssessmentPlatform.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,51 +14,68 @@ namespace SkillAssessmentPlatform.Application.Services
 {
     public class AuthService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IAuthRepository _authRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<AuthService> _logger;
+        private readonly TokenService _tokenService;
 
-        public AuthService(IUserRepository userRepository, IMapper mapper
-           , ILogger<AuthService> logger)
+        public AuthService(IAuthRepository authRepository, 
+            IMapper mapper,
+            ILogger<AuthService> logger,
+            TokenService tokenService)
         {
-            _userRepository = userRepository;
+            _authRepository = authRepository;
             _mapper = mapper;
             _logger = logger;
+            _tokenService = tokenService;
         }
-        public async Task<string> RegisterApplicant(UserRegisterDTO dto, string password)
+        public async Task<string> RegisterApplicantAsync(UserRegisterDTO dto)
         {
-            _logger.LogInformation("AuthService-RegisterApplicant");
-            // Console.WriteLine(dto);
-            if (string.IsNullOrWhiteSpace(password))
+            if(dto == null)
             {
-                return "Invailed data";
+                return "0";
             }
+            if (string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return "0";
+            }
+
+            var user = _mapper.Map<User>(dto);
+
+            return await _authRepository.RegisterApplicantAsync(user, dto.Password);
+        }
+        public async Task<string> RegisterExaminerAsync(UserRegisterDTO dto)
+        {
             if (dto == null)
             {
-                return "Invailed data";
+                return "0";
             }
-            var user = _mapper.Map<User>(dto);
-            _logger.LogInformation("Mapping done");
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(dto.Password))
             {
-                return "Mapping failed";
+                return "0";
             }
-            Console.WriteLine(user);
-            return await _userRepository.RegisterApplicantAsync(user, password);
+
+            var user = _mapper.Map<User>(dto);
+
+            return await _authRepository.RegisterExaminerAsync(user, dto.Password);
         }
-        public async Task<string> RegisterExaminer(UserRegisterDTO dto, string password)
+        public async Task<string> LogInAsync(LoginDTO loginDTO)
         {
-            if (string.IsNullOrWhiteSpace(password))
+            if (loginDTO == null)
             {
-                return "Invailed data";
+                return "0";
             }
-            if (dto == null)
+            var user = await _authRepository.LogInAsync(loginDTO.Email, loginDTO.Password);
+            if(user == null)
             {
-                return "Invailed data";
+                return "0";
             }
-            var user = _mapper.Map<User>(dto);
-            return await _userRepository.RegisterExaminerAsync(user, password);
+            return _tokenService.GenerateToken(user);
+
         }
+        
+
+        
 
     }
 }

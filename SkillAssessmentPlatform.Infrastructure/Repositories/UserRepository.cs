@@ -32,58 +32,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             _logger = logger;
         }
 
-        public async Task<string> RegisterApplicantAsync(User user, string password)
-        {
-            _logger.LogInformation("AuthService-RegisterApplicant");
-            var result = await _userManager.CreateAsync(user, password);
-            if (result.Succeeded)
-            {
-                _logger.LogInformation("Add user succeeded");
-            }
-            
-            if (!result.Succeeded)
-            {
-                var errorMasseges = result.Errors.Select(e => e.Description).ToList();
-                return string.Join(", ", errorMasseges);
-            }
-            await _userManager.AddToRoleAsync(user, Actors.Applicant);
-            var applicant = new Applicant
-            {
-                Id = user.Id,
-                Status = ApplicantStatus.Inactive,
-                ExaminerID = null,
-                User = user,
-            };
-            _logger.LogInformation("applicant created " + user.FullName);
-
-
-            _applicantRepository.Add(applicant);
-            return " Succeeded";
-
-        }
-
-        public async Task<string> RegisterExaminerAsync(User user, string password)
-        {
-            var result = await _userManager.CreateAsync(user, password);
-            if (!result.Succeeded)
-            {
-                var errorMasseges = result.Errors.Select(e => e.Description).ToList();
-                return string.Join(", ", errorMasseges);
-            }
-            var examiner = new Examiner
-            {
-                Id = user.Id,
-                Specialization = string.Empty,
-                TrackID = null,
-                MaxWorkLoad = 0,
-                CurrWorkLoad = 0
-            };
-
-            _examinerRepository.Add(examiner);
-            return " Succeeded";
-
-        }
-
+        
         public async Task<User>? GetUserByIdAsync(string id)
         {
             return await _userManager.FindByIdAsync(id);

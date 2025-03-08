@@ -26,16 +26,24 @@ namespace SkillAssessmentPlatform.API
                     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
-            builder.Services.AddIdentity<User, IdentityRole>()
-            .AddEntityFrameworkStores<AppDbContext>()
-               .AddDefaultTokenProviders();
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.Password.RequireUppercase = false;
+
+            }).AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(options => 
+                                        options.TokenLifespan = TimeSpan.FromHours(2));
 
             builder.Services.AddLogging();
             //builder.Services.AddScoped<IRepository<T>, Repository<T>>();
+            builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
             builder.Services.AddScoped<IExaminerRepository, ExaminerRepository>();
             builder.Services.AddScoped<AuthService>();
+            builder.Services.AddScoped<TokenService>();
 
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -71,7 +79,7 @@ namespace SkillAssessmentPlatform.API
         }
         async static Task SeedRoles(RoleManager<IdentityRole> roleManager)
         {
-            string[] roleNames = { Actors.Admin, Actors.Examiner, Actors.Applicant, Actors.SeniorExaminer };
+            string[] roleNames = { Actors.Admin.ToString(), Actors.Examiner.ToString()  , Actors.Applicant.ToString(), Actors.SeniorExaminer.ToString() };
 
             foreach (var roleName in roleNames)
             {

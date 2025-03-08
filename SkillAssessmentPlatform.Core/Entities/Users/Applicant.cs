@@ -15,6 +15,5 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
         //suppervise relation 
         public string? ExaminerID { get; set; }
 
-        public User User { get; set; }
     }
 }

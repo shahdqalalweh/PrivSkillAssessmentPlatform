@@ -28,10 +28,10 @@ namespace SkillAssessmentPlatform.Infrastructure.Data
 
             // Configure the inheritance
             builder.Entity<IdentityRole>().HasData(
-            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = Actors.Admin, NormalizedName = Actors.Admin.ToUpper() },
-            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = Actors.Examiner, NormalizedName = Actors.Examiner.ToUpper() },
-            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = Actors.SeniorExaminer, NormalizedName = Actors.SeniorExaminer.ToUpper() },
-            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = Actors.Applicant, NormalizedName = Actors.Applicant.ToUpper() }
+            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = Actors.Admin.ToString(), NormalizedName = Actors.Admin.ToString().ToUpper() },
+            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = Actors.Examiner.ToString(), NormalizedName = Actors.Examiner.ToString().ToUpper() },
+            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = Actors.SeniorExaminer.ToString(), NormalizedName = Actors.SeniorExaminer.ToString().ToUpper() },
+            new IdentityRole { Id = Guid.NewGuid().ToString(), Name = Actors.Applicant.ToString(), NormalizedName = Actors.Applicant.ToString().ToUpper() }
         );
 
             builder.Entity<User>()
@@ -46,17 +46,17 @@ namespace SkillAssessmentPlatform.Infrastructure.Data
                 .HasBaseType<User>();
 
 
-             builder.Entity<User>()
-            .HasOne(u => u.Applicant)
-            .WithOne(a => a.User)
-            .HasForeignKey<Applicant>(a => a.Id)  
-            .IsRequired();
+            // builder.Entity<User>()
+            //.HasOne(u => u.Applicant)
+            //.WithOne(a => a.User)
+            //.HasForeignKey<Applicant>(a => a.Id)  
+            //.IsRequired();
 
-            builder.Entity<User>()
-            .HasOne(u => u.Examiner)
-            .WithOne(a => a.User)
-            .HasForeignKey<Examiner>(a => a.Id)
-            .IsRequired();
+            //builder.Entity<User>()
+            //.HasOne(u => u.Examiner)
+            //.WithOne(a => a.User)
+            //.HasForeignKey<Examiner>(a => a.Id)
+            //.IsRequired();
 
         }
 

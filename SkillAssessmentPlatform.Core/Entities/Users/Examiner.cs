@@ -11,8 +11,7 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
         public string Specialization {  get; set; }
         public int? TrackID { get; set; }
         public int MaxWorkLoad { get; set; }
-        public int CurrWorkLoad { get; set; }
+        public int CurrWorkLoad { get; set; } = 0;
 
-        public User User { get; set; }
     }
 }

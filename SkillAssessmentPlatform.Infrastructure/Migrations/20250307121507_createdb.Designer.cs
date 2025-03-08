@@ -12,8 +12,8 @@ using SkillAssessmentPlatform.Infrastructure.Data;
 namespace SkillAssessmentPlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250306210514_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250307121507_createdb")]
+    partial class createdb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,32 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "969e25ee-0773-4b1b-80c4-d683f9d3f1cb",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "46ffb756-f4c5-4dbe-988b-8bed1ba13d88",
+                            Name = "Examiner",
+                            NormalizedName = "EXAMINER"
+                        },
+                        new
+                        {
+                            Id = "9bc99e9e-973a-4e33-bce8-9e1ea83c82ec",
+                            Name = "SeniorExaminer",
+                            NormalizedName = "SENIOREXAMINER"
+                        },
+                        new
+                        {
+                            Id = "aa3171e0-c407-40ac-a259-1ab687464e5d",
+                            Name = "Applicant",
+                            NormalizedName = "APPLICANT"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -237,7 +263,6 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.HasBaseType("SkillAssessmentPlatform.Core.Entities.Users.User");
 
                     b.Property<string>("ExaminerID")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
@@ -319,31 +344,20 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Applicant", b =>
                 {
-                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", "User")
-                        .WithOne("Applicant")
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", null)
+                        .WithOne()
                         .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Users.Applicant", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Examiner", b =>
                 {
-                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", "User")
-                        .WithOne("Examiner")
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", null)
+                        .WithOne()
                         .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.User", b =>
-                {
-                    b.Navigation("Applicant");
-
-                    b.Navigation("Examiner");
                 });
 #pragma warning restore 612, 618
         }

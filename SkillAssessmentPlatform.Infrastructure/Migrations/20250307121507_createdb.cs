@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace SkillAssessmentPlatform.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class createdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -79,7 +81,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    ExaminerID = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ExaminerID = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -196,6 +198,17 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "46ffb756-f4c5-4dbe-988b-8bed1ba13d88", null, "Examiner", "EXAMINER" },
+                    { "969e25ee-0773-4b1b-80c4-d683f9d3f1cb", null, "Admin", "ADMIN" },
+                    { "9bc99e9e-973a-4e33-bce8-9e1ea83c82ec", null, "SeniorExaminer", "SENIOREXAMINER" },
+                    { "aa3171e0-c407-40ac-a259-1ab687464e5d", null, "Applicant", "APPLICANT" }
                 });
 
             migrationBuilder.CreateIndex(

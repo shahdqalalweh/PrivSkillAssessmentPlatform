@@ -10,7 +10,6 @@ namespace SkillAssessmentPlatform.Core.Interfaces
 {
     public interface IApplicantRepository 
     {
-        void Add(Applicant applicant);
         Task<IEnumerable<Applicant>> GetAllApplicantsAsync();
         Task<Applicant> GetApplicantByIdAsync(string id);
         Task CreateApplicantAsync(Applicant applicant);
