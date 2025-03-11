@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Application.DTOs
 {
-    public class UserRegisterDTO
+    public class ChangePasswordDTO
     {
         public string Email { get; set; }
-        public string Password { get; set; }
-        public string FullName { get; set; }
-        //public DateTime DateOfBirth { get; set; }
+        public string OldPassword { get; set; }
+        public string NewPassword { get; set; }
+        
     }
 }

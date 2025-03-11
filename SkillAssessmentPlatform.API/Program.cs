@@ -1,14 +1,19 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using SkillAssessmentPlatform.Application.Mapping;
 using SkillAssessmentPlatform.Application.Services;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Interfaces;
 using SkillAssessmentPlatform.Infrastructure.Data;
+using SkillAssessmentPlatform.Infrastructure.ExternalServices;
 using SkillAssessmentPlatform.Infrastructure.Repositories;
 using System.Data;
+using System.Text;
 
 namespace SkillAssessmentPlatform.API
 {
@@ -29,12 +34,13 @@ namespace SkillAssessmentPlatform.API
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireUppercase = false;
+                options.SignIn.RequireConfirmedEmail = false;
 
             }).AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            builder.Services.Configure<DataProtectionTokenProviderOptions>(options => 
-                                        options.TokenLifespan = TimeSpan.FromHours(2));
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+                                        options.TokenLifespan = TimeSpan.FromHours(7));
 
             builder.Services.AddLogging();
             //builder.Services.AddScoped<IRepository<T>, Repository<T>>();
@@ -46,13 +52,45 @@ namespace SkillAssessmentPlatform.API
             builder.Services.AddScoped<TokenService>();
 
             builder.Services.AddAutoMapper(typeof(MappingProfile));
+            builder.Services.AddScoped<EmailServices>();
 
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;  
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = builder.Configuration["JWT:Audience"], 
+                    ValidIssuer = builder.Configuration["JWT:Issuer"],     
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:key"]))  
+                };
+            });
+
+
             var app = builder.Build();
+            app.UseCors("AllowAll");
 
             using (var scope = app.Services.CreateScope())
             {
@@ -69,7 +107,7 @@ namespace SkillAssessmentPlatform.API
             }
 
             //app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

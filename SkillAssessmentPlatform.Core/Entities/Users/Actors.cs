@@ -10,7 +10,7 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
     {
          Admin ,
          Examiner,
-        Applicant ,
+         Applicant ,
          SeniorExaminer 
     }
     
