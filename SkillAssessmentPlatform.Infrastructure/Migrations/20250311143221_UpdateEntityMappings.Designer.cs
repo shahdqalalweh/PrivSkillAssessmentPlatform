@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillAssessmentPlatform.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using SkillAssessmentPlatform.Infrastructure.Data;
 namespace SkillAssessmentPlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250311143221_UpdateEntityMappings")]
+    partial class UpdateEntityMappings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,25 +54,25 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "e4ab1a40-ec7f-43c7-b374-450e9afa7aff",
+                            Id = "2f93af27-14d7-45b5-a038-5626f781f68e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "81e79a46-54e0-4280-a51f-e69c1525f972",
+                            Id = "9b8e1cb4-3c90-45e2-b52e-0eb6177b2d77",
                             Name = "Examiner",
                             NormalizedName = "EXAMINER"
                         },
                         new
                         {
-                            Id = "fb180cbc-6d10-421d-b1eb-829846fe0375",
+                            Id = "5a7b8445-8342-492e-9f47-97bc982ea0ec",
                             Name = "SeniorExaminer",
                             NormalizedName = "SENIOREXAMINER"
                         },
                         new
                         {
-                            Id = "fdb45f9f-260e-4634-8c62-e24d9a6b47e7",
+                            Id = "a1e36f78-d572-40bc-a070-38e54e6faff0",
                             Name = "Applicant",
                             NormalizedName = "APPLICANT"
                         });

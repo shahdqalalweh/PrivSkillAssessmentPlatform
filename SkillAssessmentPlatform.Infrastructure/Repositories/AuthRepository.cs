@@ -54,69 +54,9 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             try
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(applicant);
-                string activationLink = $"http://localhost:5112/api/auth/emailconfirmation?email={applicant.Email}&token={token}";
+                string message = "Thank you for registering! Please click the button below to activate your account.";
+                await SendEmailConfirmation(applicant.Email, token, "emailconfirmation", "Account Activation", "Activate Your Account", message);
 
-                string emailBody = $@"
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <style>
-                                body {{
-                                    font-family: Arial, sans-serif;
-                                    background-color: #f4f4f4;
-                                    margin: 0;
-                                    padding: 0;
-                                }}
-                                .container {{
-                                    width: 80%;
-                                    max-width: 600px;
-                                    margin: 20px auto;
-                                    background: #ffffff;
-                                    padding: 20px;
-                                    border-radius: 8px;
-                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                    text-align: center;
-                                }}
-                                h3 {{
-                                    color: #333;
-                                }}
-                                p {{
-                                    color: #555;
-                                    font-size: 16px;
-                                }}
-                                .btn {{
-                                    display: inline-block;
-                                    padding: 12px 20px;
-                                    margin-top: 10px;
-                                    font-size: 16px;
-                                    color: #fff;
-                                    background-color: #28a745;
-                                    text-decoration: none;
-                                    border-radius: 5px;
-                                }}
-                                .btn:hover {{
-                                    background-color: #218838;
-                                }}
-                                .footer {{
-                                    margin-top: 20px;
-                                    font-size: 12px;
-                                    color: #999;
-                                }}
-                            </style>
-                        </head>
-                        <body>
-                            <div class='container'>
-                                <h3>Activate Your Account</h3>
-                                <p>Thank you for registering! Please click the button below to activate your account.</p>
-                                <a href='{activationLink}' class='btn'>Activate Account</a>
-                                <p>If the button doesn't work, you can also click on the following link:</p>
-                                <p><a href='{activationLink}'>{activationLink}</a></p>
-                                <p class='footer'>If you didn’t request this email, please ignore it.</p>
-                            </div>
-                        </body>
-                        </html>";
-
-                await _emailServices.SendEmailAsync(applicant.Email, "Account Activation", emailBody);
             }catch (Exception ex)
             {
                 return ex.Message;
@@ -148,69 +88,9 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             try
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(examiner);
-                string activationLink = $"http://localhost:5112/api/auth/emailconfirmation?email={examiner.Email}&token={token}";
+                string message = "Thank you for registering! Please click the button below to activate your account.";
+                await SendEmailConfirmation(examiner.Email, token, "emailconfirmation" , "Account Activation", "Activate Your Account", message);
 
-                string emailBody = $@"
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <style>
-                                body {{
-                                    font-family: Arial, sans-serif;
-                                    background-color: #f4f4f4;
-                                    margin: 0;
-                                    padding: 0;
-                                }}
-                                .container {{
-                                    width: 80%;
-                                    max-width: 600px;
-                                    margin: 20px auto;
-                                    background: #ffffff;
-                                    padding: 20px;
-                                    border-radius: 8px;
-                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                    text-align: center;
-                                }}
-                                h3 {{
-                                    color: #333;
-                                }}
-                                p {{
-                                    color: #555;
-                                    font-size: 16px;
-                                }}
-                                .btn {{
-                                    display: inline-block;
-                                    padding: 12px 20px;
-                                    margin-top: 10px;
-                                    font-size: 16px;
-                                    color: #fff;
-                                    background-color: #28a745;
-                                    text-decoration: none;
-                                    border-radius: 5px;
-                                }}
-                                .btn:hover {{
-                                    background-color: #218838;
-                                }}
-                                .footer {{
-                                    margin-top: 20px;
-                                    font-size: 12px;
-                                    color: #999;
-                                }}
-                            </style>
-                        </head>
-                        <body>
-                            <div class='container'>
-                                <h3>Activate Your Account</h3>
-                                <p>Thank you for registering! Please click the button below to activate your account.</p>
-                                <a href='{activationLink}' class='btn'>Activate Account</a>
-                                <p>If the button doesn't work, you can also click on the following link:</p>
-                                <p><a href='{activationLink}'>{activationLink}</a></p>
-                                <p class='footer'>If you didn’t request this email, please ignore it.</p>
-                            </div>
-                        </body>
-                        </html>";
-
-                await _emailServices.SendEmailAsync(examiner.Email, "Account Activation", emailBody);
             }
             catch (Exception ex)
             {
@@ -239,14 +119,11 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             }
             return "1";
         }
-
-        // UNUSED
-        private async Task<string> SendEmailConfirmation( User user)
+        private async Task<string> SendEmailConfirmation( string email, string token, string endpoint, string subject, string action, string message)
         {
             try
             {
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                string activationLink = $"http://localhost:5112/api/auth/emailconfirmation?email={user.Email}&token={token}";
+                string Link = $"http://localhost:5112/api/auth/{endpoint}?email={email}&token={token}";
 
                 string emailBody = $@"
                     <!DOCTYPE html>
@@ -298,17 +175,17 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                     </head>
                     <body>
                         <div class='container'>
-                            <h3>Activate Your Account</h3>
-                            <p>Thank you for registering! Please click the button below to activate your account.</p>
-                            <a href='{activationLink}' class='btn'>Activate Account</a>
+                            <h3>{action}</h3>
+                            <p>{message}</p>
+                            <a href='{Link}' class='btn'>{action}</a>
                             <p>If the button doesn't work, you can also click on the following link:</p>
-                            <p><a href='{activationLink}'>{activationLink}</a></p>
+                            <p><a href='{Link}'>{Link}</a></p>
                             <p class='footer'>If you didn’t request this email, please ignore it.</p>
                         </div>
                     </body>
                     </html>";
 
-                await _emailServices.SendEmailAsync(user.Email, "Account Activation", emailBody);
+                await _emailServices.SendEmailAsync(email, subject, emailBody);
             }catch (Exception ex)
             {
                 return ex.Message;
@@ -366,70 +243,9 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             if( user != null )
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                string resetLink = $"http://localhost:5112/api/auth/resetpassword?email={user.Email}&token={token}";
+                string message = "\r\nThank you for reaching out to us. We have received your request to reset your password.\r\n\r\nTo proceed with resetting your password, please follow the instructions below:\r\n\r\nClick on the password reset link sent to your registered email address.\r\nFollow the prompts to create a new password.\r\n";
+                return await SendEmailConfirmation(user.Email, token, "resetpassword", "Forgot Password", "Reset your password", message);
 
-                string emailBody = $@"
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <style>
-                                body {{
-                                    font-family: Arial, sans-serif;
-                                    background-color: #f4f4f4;
-                                    margin: 0;
-                                    padding: 0;
-                                }}
-                                .container {{
-                                    width: 80%;
-                                    max-width: 600px;
-                                    margin: 20px auto;
-                                    background: #ffffff;
-                                    padding: 20px;
-                                    border-radius: 8px;
-                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                    text-align: center;
-                                }}
-                                h3 {{
-                                    color: #333;
-                                }}
-                                p {{
-                                    color: #555;
-                                    font-size: 16px;
-                                }}
-                                .btn {{
-                                    display: inline-block;
-                                    padding: 12px 20px;
-                                    margin-top: 10px;
-                                    font-size: 16px;
-                                    color: #fff;
-                                    background-color: #28a745;
-                                    text-decoration: none;
-                                    border-radius: 5px;
-                                }}
-                                .btn:hover {{
-                                    background-color: #218838;
-                                }}
-                                .footer {{
-                                    margin-top: 20px;
-                                    font-size: 12px;
-                                    color: #999;
-                                }}
-                            </style>
-                        </head>
-                        <body>
-                            <div class='container'>
-                                <h3>Reset password</h3>
-                                <p>You can click the botton to reset your password.</p>
-                                <a href='{resetLink}' class='btn'>RESET PASSWORD</a>
-                                <p>If the button doesn't work, you can also click on the following link:</p>
-                                <p><a href='{resetLink}'>{resetLink}</a></p>
-                                <p class='footer'>If you didn’t request this email, please ignore it.</p>
-                            </div>
-                        </body>
-                        </html>";
-
-                await _emailServices.SendEmailAsync(user.Email, "Forgot Password", emailBody);
-                return "1";
             }
             return "couldnot send an email";
         }

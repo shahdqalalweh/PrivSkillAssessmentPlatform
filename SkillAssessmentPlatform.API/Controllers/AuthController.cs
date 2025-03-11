@@ -50,7 +50,7 @@ namespace SkillAssessmentPlatform.API.Controllers
             return BadRequest(new { Message = result });
         }
         [HttpPost("register/examiner")]
-        [Authorize(Roles ="Admin")]
+       // [Authorize(Roles ="Admin")]
         public async Task<IActionResult> RegisterExaminer(UserRegisterDTO userRegisterDTO)
         {
             if (!ModelState.IsValid)

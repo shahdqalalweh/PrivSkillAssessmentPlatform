@@ -13,7 +13,6 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
     {
         public ApplicantStatus Status { get; set; }
 
-        //suppervise relation 
         public string? ExaminerID { get; set; }
 
         public Examiner Examiner { get; set; }

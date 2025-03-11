@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SkillAssessmentPlatform.Application.Mapping;
@@ -92,12 +93,20 @@ namespace SkillAssessmentPlatform.API
             var app = builder.Build();
             app.UseCors("AllowAll");
 
+            //using (var scope = app.Services.CreateScope())
+            //{
+            //    var services = scope.ServiceProvider;
+            //    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            //    await SeedRoles(roleManager);
+            //}
+
             using (var scope = app.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
-                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-                await SeedRoles(roleManager);
+                var serviceProvider = scope.ServiceProvider;
+                var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+                await SeedAdmin(serviceProvider, logger);
             }
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -115,15 +124,50 @@ namespace SkillAssessmentPlatform.API
 
             app.Run();
         }
-        async static Task SeedRoles(RoleManager<IdentityRole> roleManager)
-        {
-            string[] roleNames = { Actors.Admin.ToString(), Actors.Examiner.ToString()  , Actors.Applicant.ToString(), Actors.SeniorExaminer.ToString() };
+        //async static Task SeedRoles(RoleManager<IdentityRole> roleManager)
+        //{
+        //    string[] roleNames = { Actors.Admin.ToString(),
+        //                           Actors.Examiner.ToString(),
+        //                           Actors.Applicant.ToString(), 
+        //                           Actors.SeniorExaminer.ToString() };
 
-            foreach (var roleName in roleNames)
+        //    foreach (var roleName in roleNames)
+        //    {
+        //        if (!await roleManager.RoleExistsAsync(roleName))
+        //        {
+        //            await roleManager.CreateAsync(new IdentityRole(roleName));
+        //        }
+        //    }
+        //}
+
+        async static Task SeedAdmin(IServiceProvider serviceProvider, ILogger logger)
+        {
+            var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            string adminEmail = "azzaaleid@gmail.com";
+            string adminPassword = "Admin@123456";
+
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            if (adminUser == null)
             {
-                if (!await roleManager.RoleExistsAsync(roleName))
+                adminUser = new User
                 {
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    EmailConfirmed = true,
+                    FullName = "Admin"
+                };
+
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(adminUser, Actors.Admin.ToString());
+                    logger.LogInformation(" admin created!");
+                }
+                else
+                {
+                    logger.LogError(" seed admin faild " + string.Join(", ", result.Errors.Select(e => e.Description)));
                 }
             }
         }

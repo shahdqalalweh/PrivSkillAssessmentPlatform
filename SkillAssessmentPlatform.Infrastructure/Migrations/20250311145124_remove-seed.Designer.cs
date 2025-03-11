@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SkillAssessmentPlatform.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using SkillAssessmentPlatform.Infrastructure.Data;
 namespace SkillAssessmentPlatform.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250311145124_remove-seed")]
+    partial class removeseed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,32 +50,6 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "e4ab1a40-ec7f-43c7-b374-450e9afa7aff",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = "81e79a46-54e0-4280-a51f-e69c1525f972",
-                            Name = "Examiner",
-                            NormalizedName = "EXAMINER"
-                        },
-                        new
-                        {
-                            Id = "fb180cbc-6d10-421d-b1eb-829846fe0375",
-                            Name = "SeniorExaminer",
-                            NormalizedName = "SENIOREXAMINER"
-                        },
-                        new
-                        {
-                            Id = "fdb45f9f-260e-4634-8c62-e24d9a6b47e7",
-                            Name = "Applicant",
-                            NormalizedName = "APPLICANT"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
