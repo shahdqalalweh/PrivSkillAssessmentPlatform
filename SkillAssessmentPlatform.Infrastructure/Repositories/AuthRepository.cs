@@ -1,15 +1,20 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SkillAssessmentPlatform.Core.Common;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Enums;
+using SkillAssessmentPlatform.Core.Exceptions;
 using SkillAssessmentPlatform.Core.Interfaces;
 using SkillAssessmentPlatform.Infrastructure.ExternalServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
@@ -33,8 +38,8 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             _logger = logger;
         }
 
-        
-        public async Task<string> RegisterApplicantAsync(User user, string password)
+    
+        public async Task<Applicant> RegisterApplicantAsync(User user, string password)
         {
             var applicant = new Applicant
             {
@@ -44,29 +49,32 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 FullName = user.FullName,
                 Status = ApplicantStatus.Inactive,
             };
-            var result = await _userManager.CreateAsync(applicant, password);
 
+            var result = await _userManager.CreateAsync(applicant, password);
             if (!result.Succeeded)
             {
-                var errorMasseges = result.Errors.Select(e => e.Description).ToList();
-                return string.Join(", ", errorMasseges);
+                throw new UserException(string.Join(", ", result.Errors.Select(e => e.Description)));
             }
-            try
-            {
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(applicant);
-                string message = "Thank you for registering! Please click the button below to activate your account.";
-                await SendEmailConfirmation(applicant.Email, token, "emailconfirmation", "Account Activation", "Activate Your Account", message);
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(applicant);
+            string message = "Thank you for registering! Please click the button below to activate your account.";
 
-            }catch (Exception ex)
-            {
-                return ex.Message;
-            }
-            return "Confirmation Email sent";
+            await SendEmailAsync(applicant.Email, token, "emailconfirmation", "Account Activation", "Activate Your Account", message);
 
-             //return await SendEmailConfirmation(user);
+            var newApplicant = new Applicant
+            {
+                Id= applicant.Id,
+                Email = user.Email,
+                UserName = user.Email,
+                UserType = Actors.Applicant,
+                FullName = user.FullName,
+                Status = ApplicantStatus.Inactive,
+            };
+            //if (sendErs)
+
+            return newApplicant;
         }
-
-        public async Task<string> RegisterExaminerAsync(User user, string password)
+       
+        public async Task<Examiner> RegisterExaminerAsync(User user, string password)
         {
             var examiner = new Examiner
             {
@@ -82,48 +90,61 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
 
             if (!result.Succeeded)
             {
-                var errorMasseges = result.Errors.Select(e => e.Description).ToList();
-                return string.Join(", ", errorMasseges);
-            }
-            try
-            {
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(examiner);
-                string message = "Thank you for registering! Please click the button below to activate your account.";
-                await SendEmailConfirmation(examiner.Email, token, "emailconfirmation" , "Account Activation", "Activate Your Account", message);
+                //var errorMasseges = result.Errors.Select(e => e.Description).ToList();
+                //return string.Join(", ", errorMasseges);
+                throw new UserException(string.Join(", ", result.Errors.Select(e => e.Description)));
 
             }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-            return "Confirmation Email sent";
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(examiner);
+            string message = "Thank you for registering! Please click the button below to activate your account.";
 
-            //return await SendEmailConfirmation(user);
+            await SendEmailAsync(examiner.Email, token, "emailconfirmation", "Account Activation", "Activate Your Account", message);
+
+            var newExaminer = new Examiner
+            {
+                Id = examiner.Id,
+                Email = user.Email,
+                UserName = user.Email,
+                UserType = Actors.Examiner,
+                FullName = user.FullName,
+                Specialization = "----",
+                MaxWorkLoad = 9,
+                CurrWorkLoad = 0
+            };
+            //if (sendErs)
+
+            return newExaminer;
 
         }
-        public async Task<string> EmailConfirmation(string email, string token)
+        
+        public async Task EmailConfirmation(string email, string token)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return "In correct email";
+                throw new UserNotFoundException("Invalid email.");
             }
+
             var confirmResult = await _userManager.ConfirmEmailAsync(user, token);
-            if (!confirmResult.Succeeded) 
+            if (!confirmResult.Succeeded)
             {
                 foreach (var error in confirmResult.Errors)
                 {
-                    _logger.LogError($"❌ Email confirmation error: {error.Code} - {error.Description}");
+                    _logger.LogError($" Email confirmation error: {error.Code} - {error.Description}");
                 }
-                return "confirmation unsucceeeded";
+                throw new UserException(string.Join(", ", confirmResult.Errors.Select(e => e.Description)));
             }
-            return "1";
+
         }
-        private async Task<string> SendEmailConfirmation( string email, string token, string endpoint, string subject, string action, string message)
+        
+        public async Task<bool> SendEmailAsync(string email, string token, string endpoint, string subject, string action, string message)
         {
             try
             {
-                string Link = $"http://localhost:5112/api/auth/{endpoint}?email={email}&token={token}";
+                string encodedToken = HttpUtility.UrlEncode(token);
+                string link = $"http://localhost:5112/api/auth/{endpoint}?email={email}&token={encodedToken}";
+
+                _logger.LogInformation($"[Email Sending] Email: {email}, Endpoint: {endpoint}, Encoded Token: {encodedToken}");
 
                 string emailBody = $@"
                     <!DOCTYPE html>
@@ -177,36 +198,42 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                         <div class='container'>
                             <h3>{action}</h3>
                             <p>{message}</p>
-                            <a href='{Link}' class='btn'>{action}</a>
+                            <a href='{link}' class='btn'>{action}</a>
                             <p>If the button doesn't work, you can also click on the following link:</p>
-                            <p><a href='{Link}'>{Link}</a></p>
+                            <p><a href='{link}'>{link}</a></p>
                             <p class='footer'>If you didn’t request this email, please ignore it.</p>
                         </div>
                     </body>
                     </html>";
 
                 await _emailServices.SendEmailAsync(email, subject, emailBody);
-            }catch (Exception ex)
-            {
-                return ex.Message;
+                _logger.LogInformation($"[Email Sent] Successfully sent email to {email}.");
+
+                return true;
             }
-            return "1";
-            
+
+            catch (Exception ex)
+            {
+                _logger.LogError($"[Unexpected Error] While sending email to {email}: {ex.Message}");
+                throw;
+            }
         }
-        public async Task<string> ChangePasswordAsync(string email, string oldPassword, string newPassword)
+
+
+        public async Task ChangePasswordAsync(string email, string oldPassword, string newPassword)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return "User not found.";
+                throw new UserNotFoundException("Invalid email.");
             }
 
-            // check old password
-            var oldPasswordValid = await _userManager.CheckPasswordAsync(user, oldPassword);
-            if (!oldPasswordValid)
-            {
-                return "Old password is incorrect.";
-            }
+            //// check old password
+            //var oldPasswordValid = await _userManager.CheckPasswordAsync(user, oldPassword);
+            //if (!oldPasswordValid)
+            //{
+            //    return "Old password is incorrect.";
+            //}
 
             // change password
             var changePasswordResult = await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
@@ -216,56 +243,75 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 {
                     _logger.LogError($"Error Code: {error.Code}, Description: {error.Description}");
                 }
-                return "Error in changing password.";
+                throw new UserException(string.Join(", ", changePasswordResult.Errors.Select(e => e.Description)));
             }
 
-            return "1";
         }
 
         public async Task<User>? LogInAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if ( user == null)
+            if (user == null)
             {
-                return null;
+                throw new UserNotFoundException("Invalid email.");
             }
+
             if (!(await _userManager.CheckPasswordAsync(user, password)))
             {
-                return null;
+                throw new UserException("Invalid password.");
             }
             return user;
-
         }
 
-        public async Task<string> ForgotPasswordAsync(string email)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            if( user != null )
-            {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                string message = "\r\nThank you for reaching out to us. We have received your request to reset your password.\r\n\r\nTo proceed with resetting your password, please follow the instructions below:\r\n\r\nClick on the password reset link sent to your registered email address.\r\nFollow the prompts to create a new password.\r\n";
-                return await SendEmailConfirmation(user.Email, token, "resetpassword", "Forgot Password", "Reset your password", message);
-
-            }
-            return "couldnot send an email";
-        }
-        public async Task<string> ResetPassword(string email, string password, string token)
+        public async Task ForgotPasswordAsync( string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return "faild";
+                throw new UserNotFoundException("Invalid email.");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            string message = "\r\nThank you for reaching out to us. We have received your request to reset your password.\r\n\r\nTo proceed with resetting your password, please follow the instructions below:\r\n\r\nClick on the password reset link sent to your registered email address.\r\nFollow the prompts to create a new password.\r\n";
+            await SendEmailAsync(user.Email, token, "resetpassword", "Forgot Password", "Reset your password", message);
+            
+        }
+        public async Task ResetPassword(string email, string password, string token)
+        {
+            token = HttpUtility.UrlDecode(token);
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                throw new UserNotFoundException("Invalid email.");
             }
             var resetPassResult = await _userManager.ResetPasswordAsync(user, token, password);
             if (!resetPassResult.Succeeded)
             {
                 foreach (var error in resetPassResult.Errors)
                     _logger.LogError(error.Code, error.Description);
-                return "error in reseting procces";
+                throw new UserException(string.Join(", ", resetPassResult.Errors.Select(e => e.Description)));
             }
-            return "1";
         }
 
+        public async Task DeleteUserAsync(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null)
+            {
+                await _userManager.DeleteAsync(user);
+            }
+        }
 
+        public async Task<bool> UpdateUserEmail(string userId, string newEmail)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+            
+
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+            var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
+
+            return result.Succeeded;
+        }
     }
 }

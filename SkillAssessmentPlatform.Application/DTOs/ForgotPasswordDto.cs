@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Application.DTOs
 {
-    public class LoginDTO
+    public class ForgotPasswordDto
     {
         [Required]
         public string Email { get; set; }
-        [Required]
-        public string Password { get; set; }
     }
 }

@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using SkillAssessmentPlatform.API.Bases;
+using SkillAssessmentPlatform.API.Common;
 using SkillAssessmentPlatform.Application.Mapping;
 using SkillAssessmentPlatform.Application.Services;
 using SkillAssessmentPlatform.Core.Entities.Users;
@@ -51,6 +53,8 @@ namespace SkillAssessmentPlatform.API
             builder.Services.AddScoped<IExaminerRepository, ExaminerRepository>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
+            builder.Services.AddScoped<IResponseHandler, ResponseHandler>();
+
 
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddScoped<EmailServices>();
