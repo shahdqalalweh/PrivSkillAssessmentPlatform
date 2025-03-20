@@ -95,9 +95,12 @@ namespace SkillAssessmentPlatform.API.Controllers
             }
 
             var result = await _authService.EmailConfirmationAsync(email, token);
-            return result.Succeeded
-                ? Redirect("http://localhost:5173/login")
-                : _responseHandler.BadRequest(result.Message, result.Errors);
+            if (!result.Succeeded)
+            {
+                return _responseHandler.BadRequest(result.Message, result.Errors);
+            }
+
+            return Redirect("http://localhost:5173/login");
         }
 
         [HttpPost("forgotpassword")]
@@ -121,13 +124,14 @@ namespace SkillAssessmentPlatform.API.Controllers
         public async Task<IActionResult> ResetPassword([FromQuery] string email, [FromQuery] string token)
         {
             if(email == null) { return BadRequest(); }
-            
-            return Redirect($"http://localhost:5173/resetpassword?email={email}&token={HttpUtility.UrlEncode(token)}");
+            string encodedToken = Base64UrlEncoder.Encode(token);
+            //HttpUtility.UrlEncode(token)
+            return Redirect($"http://localhost:5173/resetpassword?email={email}&token={HttpUtility.UrlEncode(encodedToken)}");
         }
 
         [HttpPost("resetpassword")]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword(ResetPasswordDTO dto)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
         {
             if(dto == null) 
             { 
@@ -138,6 +142,7 @@ namespace SkillAssessmentPlatform.API.Controllers
             return result.Succeeded
                ? _responseHandler.Success(result.Message)
                : _responseHandler.BadRequest(result.Message, result.Errors);
+           //Redirect("http://localhost:5173/login")
         }
 
         [HttpPost("changepassword")]
@@ -169,11 +174,9 @@ namespace SkillAssessmentPlatform.API.Controllers
                 return _responseHandler.BadRequest("Invalid input data", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList());
             }
             var result = await _authService.UpdateUserEmail(dto.Id, dto.newEmail);
-            if (result)
-            {
-                return _responseHandler.Success("Email updated successfully.");
-            }
-            return _responseHandler.BadRequest("Failed to update email.", null);
+            return result.Succeeded
+              ? _responseHandler.Success(result.Message)
+              : _responseHandler.BadRequest(result.Message, result.Errors); ;
         }
 
 

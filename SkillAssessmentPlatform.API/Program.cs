@@ -160,6 +160,7 @@ namespace SkillAssessmentPlatform.API
                     UserName = adminEmail,
                     Email = adminEmail,
                     EmailConfirmed = true,
+                    UserType = Actors.Admin,
                     FullName = "Admin"
                 };
 

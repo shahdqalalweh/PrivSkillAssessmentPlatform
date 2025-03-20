@@ -21,35 +21,53 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             _dbSet = context.Set<T>();
         }
 
-        public async Task<T?> GetByIdAsync(Guid id)
+        public virtual async Task<T> GetByIdAsync(string id)
         {
             return await _dbSet.FindAsync(id);
         }
-
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<T> GetByIdAsync(int id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }
 
-        public async Task AddAsync(T entity)
+        public virtual async Task<IEnumerable<T>> GetPagedAsync(int page, int pageSize)
         {
-            await _dbSet.AddAsync(entity);
+            return await _dbSet
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
-        public void Update(T entity)
+        public virtual async Task<T> UpdateAsync(T entity)
         {
-            _dbSet.Update(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return entity;
         }
 
-        public void Delete(T entity)
+        public virtual async Task<bool> DeleteAsync(string id)
         {
+            var entity = await _dbSet.FindAsync(id);
+            if (entity == null)
+                return false;
+
             _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+            return true;
         }
-
-        public async Task<bool> SaveChangesAsync()
+        public virtual async Task<bool> DeleteAsync(int id)
         {
-            return await _context.SaveChangesAsync() > 0;
+            var entity = await _dbSet.FindAsync(id);
+            if (entity == null)
+                return false;
+
+            _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
-
 }

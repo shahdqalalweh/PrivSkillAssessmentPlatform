@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SkillAssessmentPlatform.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class createdb : Migration
+    public partial class Users : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,10 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UserType = table.Column<int>(type: "int", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Gendar = table.Column<int>(type: "int", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -80,8 +83,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    ExaminerID = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -184,10 +186,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Specialization = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TrackID = table.Column<int>(type: "int", nullable: true),
-                    MaxWorkLoad = table.Column<int>(type: "int", nullable: false),
-                    CurrWorkLoad = table.Column<int>(type: "int", nullable: false)
+                    Specialization = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -200,15 +199,36 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ExaminerLoad",
+                columns: table => new
+                {
+                    ExaminerID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    ID = table.Column<int>(type: "int", nullable: false),
+                    MaxWorkLoad = table.Column<int>(type: "int", nullable: false),
+                    CurrWorkLoad = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExaminerLoad", x => new { x.ExaminerID, x.Type });
+                    table.ForeignKey(
+                        name: "FK_ExaminerLoad_Examiners_ExaminerID",
+                        column: x => x.ExaminerID,
+                        principalTable: "Examiners",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "46ffb756-f4c5-4dbe-988b-8bed1ba13d88", null, "Examiner", "EXAMINER" },
-                    { "969e25ee-0773-4b1b-80c4-d683f9d3f1cb", null, "Admin", "ADMIN" },
-                    { "9bc99e9e-973a-4e33-bce8-9e1ea83c82ec", null, "SeniorExaminer", "SENIOREXAMINER" },
-                    { "aa3171e0-c407-40ac-a259-1ab687464e5d", null, "Applicant", "APPLICANT" }
+                    { "2621f9b8-07e3-403c-bb6f-404539928e09", null, "Examiner", "EXAMINER" },
+                    { "605e416a-a428-4eef-87d3-795c17e33095", null, "SeniorExaminer", "SENIOREXAMINER" },
+                    { "7526f193-77b7-4cd3-af2f-66eedb96eb08", null, "Applicant", "APPLICANT" },
+                    { "dab7c4d0-0b55-4af8-9bbf-f06c11debc1f", null, "Admin", "ADMIN" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -273,10 +293,13 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Examiners");
+                name: "ExaminerLoad");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Examiners");
 
             migrationBuilder.DropTable(
                 name: "Users");

@@ -51,25 +51,25 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "e4ab1a40-ec7f-43c7-b374-450e9afa7aff",
+                            Id = "dab7c4d0-0b55-4af8-9bbf-f06c11debc1f",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "81e79a46-54e0-4280-a51f-e69c1525f972",
+                            Id = "2621f9b8-07e3-403c-bb6f-404539928e09",
                             Name = "Examiner",
                             NormalizedName = "EXAMINER"
                         },
                         new
                         {
-                            Id = "fb180cbc-6d10-421d-b1eb-829846fe0375",
+                            Id = "605e416a-a428-4eef-87d3-795c17e33095",
                             Name = "SeniorExaminer",
                             NormalizedName = "SENIOREXAMINER"
                         },
                         new
                         {
-                            Id = "fdb45f9f-260e-4634-8c62-e24d9a6b47e7",
+                            Id = "7526f193-77b7-4cd3-af2f-66eedb96eb08",
                             Name = "Applicant",
                             NormalizedName = "APPLICANT"
                         });
@@ -181,6 +181,28 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.ExaminerLoad", b =>
+                {
+                    b.Property<string>("ExaminerID")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrWorkLoad")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxWorkLoad")
+                        .HasColumnType("int");
+
+                    b.HasKey("ExaminerID", "Type");
+
+                    b.ToTable("ExaminerLoad");
+                });
+
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.User", b =>
                 {
                     b.Property<string>("Id")
@@ -205,6 +227,12 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Gendar")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
@@ -262,13 +290,8 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                 {
                     b.HasBaseType("SkillAssessmentPlatform.Core.Entities.Users.User");
 
-                    b.Property<string>("ExaminerID")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.HasIndex("ExaminerID");
 
                     b.ToTable("Applicants", (string)null);
                 });
@@ -277,18 +300,9 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                 {
                     b.HasBaseType("SkillAssessmentPlatform.Core.Entities.Users.User");
 
-                    b.Property<int>("CurrWorkLoad")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxWorkLoad")
-                        .HasColumnType("int");
-
                     b.Property<string>("Specialization")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("TrackID")
-                        .HasColumnType("int");
 
                     b.ToTable("Examiners", (string)null);
                 });
@@ -344,19 +358,24 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Applicant", b =>
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.ExaminerLoad", b =>
                 {
                     b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Examiner")
-                        .WithMany()
-                        .HasForeignKey("ExaminerID");
+                        .WithMany("ExaminerLoads")
+                        .HasForeignKey("ExaminerID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
+                    b.Navigation("Examiner");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Applicant", b =>
+                {
                     b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", null)
                         .WithOne()
                         .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Users.Applicant", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Examiner");
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Examiner", b =>
@@ -366,6 +385,11 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Examiner", b =>
+                {
+                    b.Navigation("ExaminerLoads");
                 });
 #pragma warning restore 612, 618
         }

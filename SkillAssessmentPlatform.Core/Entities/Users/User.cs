@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SkillAssessmentPlatform.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,6 +14,7 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
         public string FullName { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public Actors UserType { get; set; }
-
+        public string? Image {  get; set; }
+        public Gendar? Gendar { get; set; }
     }
 }

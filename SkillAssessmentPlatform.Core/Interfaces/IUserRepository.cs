@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Core.Interfaces
 {
-    public interface IUserRepository 
-    {
-        Task<User>? GetUserByIdAsync(string id);
-        Task<IEnumerable<User>> GetAllUsersAsync();
-        Task UpdateUserAsync(User user);
-        Task DeleteUserAsync(string id);
-
+    public interface IUserRepository : IRepository<User>
+    { 
+        Task<User> GetUserByEmailAsync(string email);
+        Task<IEnumerable<User>> SearchUsersAsync(string searchTerm, Actors userType);
+        Task<bool> UpdateUserRoleAsync(string userId, Actors newRole);
     }
 }

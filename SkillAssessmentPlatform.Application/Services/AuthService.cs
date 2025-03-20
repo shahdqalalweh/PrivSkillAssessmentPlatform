@@ -60,29 +60,29 @@ namespace SkillAssessmentPlatform.Application.Services
             return await _authRepository.RegisterApplicantAsync(user, dto.Password);
         }
         */
-        public async Task<Response<Applicant>> RegisterApplicantAsync(UserRegisterDTO dto)
-        {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Password))
+            public async Task<Response<Applicant>> RegisterApplicantAsync(UserRegisterDTO dto)
             {
-                return new Response<Applicant>(null, "Invalid input data", HttpStatusCode.BadRequest);
-            }
+                if (dto == null || string.IsNullOrWhiteSpace(dto.Password))
+                {
+                    return new Response<Applicant>(null, "Invalid input data", HttpStatusCode.BadRequest);
+                }
 
-            try
-            {
-                var user = _mapper.Map<User>(dto);
-                var applicant = await _authRepository.RegisterApplicantAsync(user, dto.Password);
+                try
+                {
+                    var user = _mapper.Map<User>(dto);
+                    var applicant = await _authRepository.RegisterApplicantAsync(user, dto.Password);
 
-                return new Response<Applicant>(applicant,"User registered & email sent", HttpStatusCode.OK);
+                    return new Response<Applicant>(applicant,"User registered & email sent", HttpStatusCode.OK);
+                }
+                catch (UserException ex)
+                {
+                    return new Response<Applicant>( "User creation failed", HttpStatusCode.BadRequest, new List<string> { ex.Message });
+                }
+                catch (Exception)
+                {
+                    return new Response<Applicant>("User registered but email sending failed", HttpStatusCode.InternalServerError);
+                }
             }
-            catch (UserException ex)
-            {
-                return new Response<Applicant>( "User creation failed", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            catch (Exception)
-            {
-                return new Response<Applicant>("User registered but email sending failed", HttpStatusCode.InternalServerError);
-            }
-        }
 
         public async Task<Response<Examiner>> RegisterExaminerAsync(UserRegisterDTO dto)
         {
@@ -121,7 +121,8 @@ namespace SkillAssessmentPlatform.Application.Services
             }
             catch (UserException ex)
             {
-                return new Response<string>("Email confirmation error", ex.Message, HttpStatusCode.BadRequest);
+                return new Response<string>("Email confirmation error" ,HttpStatusCode.BadRequest, new List<string> { ex.Message });
+
             }
             catch (UserNotFoundException ex)
             {
@@ -144,11 +145,11 @@ namespace SkillAssessmentPlatform.Application.Services
 
             } catch (UserException ex)
             {
-                return new Response<string>("Not correct Email or Password", HttpStatusCode.BadRequest, new List<string> { ex.Message });
+                return new Response<string>("Not correct Password", HttpStatusCode.BadRequest, new List<string> { ex.Message });
             }
             catch (UserNotFoundException ex)
             {
-                return new Response<string>("Not correct Email or Password", HttpStatusCode.BadRequest, new List<string> { ex.Message });
+                return new Response<string>("Not correct Email", HttpStatusCode.BadRequest, new List<string> { ex.Message });
             }
             catch (Exception)
             {
@@ -177,7 +178,7 @@ namespace SkillAssessmentPlatform.Application.Services
         {
             try
             {
-                await _authRepository.ResetPassword(dto.Email, dto.Password, dto.token);
+                await _authRepository.ResetPassword(dto.Email, dto.Password, dto.Token);
                 return new Response<string>("Password reset successful", HttpStatusCode.OK);
             }
             catch (UserException ex)
@@ -190,7 +191,7 @@ namespace SkillAssessmentPlatform.Application.Services
             }
             catch (Exception ex)
             {
-                return new Response<string>(null, "Email reseting failed due to an unexpected error.", HttpStatusCode.InternalServerError);
+                return new Response<string>( "Email reseting failed due to an unexpected error.", HttpStatusCode.InternalServerError, new List<string> { ex.Message });
             }
 
         }
@@ -216,9 +217,21 @@ namespace SkillAssessmentPlatform.Application.Services
             await _authRepository.DeleteUserAsync(id);
         }
 
-        public async Task<bool> UpdateUserEmail(string userId, string newEmail)
+        public async Task<Response<string>> UpdateUserEmail(string userId, string newEmail)
         {
-            return await _authRepository.UpdateUserEmail(userId, newEmail);
+            try
+            {
+                await _authRepository.UpdateUserEmail(userId, newEmail);
+                return new Response<string>("Email updated", HttpStatusCode.OK);
+            }
+            catch (UserException ex)
+            {
+                return new Response<string>("Field", HttpStatusCode.BadRequest, new List<string> { ex.Message });
+            }
+            catch (Exception)
+            {
+                return new Response<string>("Field", HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

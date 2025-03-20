@@ -8,11 +8,13 @@ namespace SkillAssessmentPlatform.Core.Interfaces
 {
     public interface IRepository<T> where T : class
     {
-        Task<T?> GetByIdAsync(Guid id);
+        Task<T> GetByIdAsync(string id);
+        Task<T> GetByIdAsync(int id);
+
         Task<IEnumerable<T>> GetAllAsync();
-        Task AddAsync(T entity); 
-        void Update(T entity);
-        void Delete(T entity);
-        Task<bool> SaveChangesAsync();
+        Task<IEnumerable<T>> GetPagedAsync(int page, int pageSize);
+        Task<T> UpdateAsync(T entity);
+        Task<bool> DeleteAsync(string id);
+        Task<bool> DeleteAsync(int id);
     }
 }

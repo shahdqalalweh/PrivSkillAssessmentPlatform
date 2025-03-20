@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using SkillAssessmentPlatform.Core.Common;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Enums;
@@ -20,7 +21,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
     public class AuthRepository : IAuthRepository
     {
-        
+
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
         private readonly EmailServices _emailServices;
@@ -38,7 +39,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             _logger = logger;
         }
 
-    
+
         public async Task<Applicant> RegisterApplicantAsync(User user, string password)
         {
             var applicant = new Applicant
@@ -59,10 +60,9 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             string message = "Thank you for registering! Please click the button below to activate your account.";
 
             await SendEmailAsync(applicant.Email, token, "emailconfirmation", "Account Activation", "Activate Your Account", message);
-
             var newApplicant = new Applicant
             {
-                Id= applicant.Id,
+                Id = applicant.Id,
                 Email = user.Email,
                 UserName = user.Email,
                 UserType = Actors.Applicant,
@@ -70,10 +70,10 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 Status = ApplicantStatus.Inactive,
             };
             //if (sendErs)
-
+            await _userManager.AddToRoleAsync(applicant, Actors.Applicant.ToString());
             return newApplicant;
         }
-       
+
         public async Task<Examiner> RegisterExaminerAsync(User user, string password)
         {
             var examiner = new Examiner
@@ -83,8 +83,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 UserType = Actors.Examiner,
                 FullName = user.FullName,
                 Specialization = "----",
-                MaxWorkLoad = 9,
-                CurrWorkLoad = 0
+
             };
             var result = await _userManager.CreateAsync(examiner, password);
 
@@ -107,16 +106,14 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 UserName = user.Email,
                 UserType = Actors.Examiner,
                 FullName = user.FullName,
-                Specialization = "----",
-                MaxWorkLoad = 9,
-                CurrWorkLoad = 0
+
             };
             //if (sendErs)
-
+            await _userManager.AddToRoleAsync(examiner, Actors.Examiner.ToString());
             return newExaminer;
 
         }
-        
+
         public async Task EmailConfirmation(string email, string token)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -124,8 +121,9 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             {
                 throw new UserNotFoundException("Invalid email.");
             }
+            string decodedToken = Uri.UnescapeDataString(token);
 
-            var confirmResult = await _userManager.ConfirmEmailAsync(user, token);
+            var confirmResult = await _userManager.ConfirmEmailAsync(user, decodedToken);
             if (!confirmResult.Succeeded)
             {
                 foreach (var error in confirmResult.Errors)
@@ -136,15 +134,22 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             }
 
         }
-        
+
         public async Task<bool> SendEmailAsync(string email, string token, string endpoint, string subject, string action, string message)
         {
             try
             {
-                string encodedToken = HttpUtility.UrlEncode(token);
+                _logger.LogWarning("\n\n SendEmailAsync method =====>  " + token);
+
+                // var decodedToken = Uri.UnescapeDataString(token);
+                //string encodedToken = HttpUtility.UrlEncode(token);
+                string encodedToken = Base64UrlEncoder.Encode(token);
+
+                _logger.LogWarning("\n\n ==== AFTER encoding  =====>  " + encodedToken);
+
                 string link = $"http://localhost:5112/api/auth/{endpoint}?email={email}&token={encodedToken}";
 
-                _logger.LogInformation($"[Email Sending] Email: {email}, Endpoint: {endpoint}, Encoded Token: {encodedToken}");
+                _logger.LogInformation($"\n\n[Email Sending] Email: {email}, Endpoint: {endpoint}, token : {token}--- Encoded Token: {encodedToken}");
 
                 string emailBody = $@"
                     <!DOCTYPE html>
@@ -263,7 +268,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             return user;
         }
 
-        public async Task ForgotPasswordAsync( string email)
+        public async Task ForgotPasswordAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
@@ -272,46 +277,70 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            _logger.LogWarning("\n\n ====>\n token after genrate =    " + token);
             string message = "\r\nThank you for reaching out to us. We have received your request to reset your password.\r\n\r\nTo proceed with resetting your password, please follow the instructions below:\r\n\r\nClick on the password reset link sent to your registered email address.\r\nFollow the prompts to create a new password.\r\n";
             await SendEmailAsync(user.Email, token, "resetpassword", "Forgot Password", "Reset your password", message);
-            
+
         }
         public async Task ResetPassword(string email, string password, string token)
         {
-            token = HttpUtility.UrlDecode(token);
+            //var newtoken = HttpUtility.UrlDecode(token);
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
                 throw new UserNotFoundException("Invalid email.");
             }
-            var resetPassResult = await _userManager.ResetPasswordAsync(user, token, password);
-            if (!resetPassResult.Succeeded)
-            {
-                foreach (var error in resetPassResult.Errors)
-                    _logger.LogError(error.Code, error.Description);
-                throw new UserException(string.Join(", ", resetPassResult.Errors.Select(e => e.Description)));
+            _logger.LogInformation("\n\n ======> Recived token = "+token);
+            // var decodedToken = WebUtility.UrlDecode(token);
+            //var decodedToken = Uri.UnescapeDataString(token);
+            string decodedToken = Base64UrlEncoder.Decode(token);
+            //var decodedToken = Encoding.UTF8.GetString(Convert.FromBase64String(token));
+
+
+            _logger.LogInformation("\n\n ======> Decoded token = " + decodedToken);
+            var resetPassResult = await _userManager.ResetPasswordAsync(user, decodedToken, password);
+                if (!resetPassResult.Succeeded)
+                {
+                    foreach (var error in resetPassResult.Errors)
+                        _logger.LogError(error.Code, error.Description);
+                    throw new UserException(string.Join(", ", resetPassResult.Errors.Select(e => e.Description)));
+                }
             }
-        }
+        //string decodedToken = Uri.UnescapeDataString(token);
+        //string decodedToken = Uri.UnescapeDataString(token);
 
         public async Task DeleteUserAsync(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user != null)
             {
-                await _userManager.DeleteAsync(user);
+                var user = await _userManager.FindByIdAsync(id);
+                if (user != null)
+                {
+                    await _userManager.DeleteAsync(user);
+                }
+            }
+
+            public async Task<bool> UpdateUserEmail(string userId, string newEmail)
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                    throw new UserNotFoundException("Invalid email.");
+                var existUser = await _userManager.FindByEmailAsync(newEmail);
+                if (existUser != null)
+                    throw new UserException("New Email already exist");
+
+                var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+                var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
+                if (!result.Succeeded)
+                {
+                    throw new UserException(string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+                user.UserName = newEmail;
+                var updateUserNameResult = await _userManager.UpdateAsync(user);
+                if (!updateUserNameResult.Succeeded)
+                {
+                    throw new UserException(string.Join(", ", updateUserNameResult.Errors.Select(e => e.Description)));
+                }
+
+                return updateUserNameResult.Succeeded;
             }
         }
-
-        public async Task<bool> UpdateUserEmail(string userId, string newEmail)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return false;
-            
-
-            var token = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
-            var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
-
-            return result.Succeeded;
-        }
     }
-}

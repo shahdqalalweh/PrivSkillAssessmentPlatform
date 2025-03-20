@@ -26,7 +26,8 @@ namespace SkillAssessmentPlatform.Application.Services
             {
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Role, user.UserType.ToString())
+            new Claim(ClaimTypes.Role, user.UserType.ToString()),
+            new Claim(ClaimTypes.Name, user.FullName.ToString())
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:key"]));
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

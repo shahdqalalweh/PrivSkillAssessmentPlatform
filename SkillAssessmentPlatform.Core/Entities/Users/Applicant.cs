@@ -13,8 +13,5 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
     {
         public ApplicantStatus Status { get; set; }
 
-        public string? ExaminerID { get; set; }
-
-        public Examiner Examiner { get; set; }
     }
 }
