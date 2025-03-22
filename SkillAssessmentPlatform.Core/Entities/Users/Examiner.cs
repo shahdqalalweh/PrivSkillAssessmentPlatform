@@ -11,6 +11,9 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
         public string Specialization {  get; set; }
 
         public ICollection<ExaminerLoad> ExaminerLoads { get; set; }
+        public ICollection<Track> ManagedTracks { get; set; }
+        public ICollection<Track> WorkingTracks { get; set; }
+
 
     }
 }

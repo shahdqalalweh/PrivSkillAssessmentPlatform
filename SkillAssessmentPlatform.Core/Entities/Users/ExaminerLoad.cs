@@ -1,12 +1,11 @@
-﻿using SkillAssessmentPlatform.Core.Entities.Users;
-using SkillAssessmentPlatform.Core.Enums;
+﻿using SkillAssessmentPlatform.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SkillAssessmentPlatform.Core.Entities
+namespace SkillAssessmentPlatform.Core.Entities.Users
 {
     public class ExaminerLoad
     {
