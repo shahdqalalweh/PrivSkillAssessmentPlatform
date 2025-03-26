@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using SkillAssessmentPlatform.Core.Entities;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Enums;
-using SkillAssessmentPlatform.Core.Interfaces;
+using SkillAssessmentPlatform.Core.Exceptions;
+using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
@@ -12,86 +15,138 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
-    public class ExaminerRepository : IExaminerRepository
+
+    public class ExaminerRepository : Repository<Examiner>, IExaminerRepository
     {
         private readonly UserManager<User> _userManager;
-        private readonly AppDbContext _context;
+        private readonly ILogger<ExaminerRepository> _logger;
 
-        public ExaminerRepository(UserManager<User> userManager, AppDbContext context)
+        public ExaminerRepository(
+            AppDbContext context,
+            UserManager<User> userManager,
+            ILogger<ExaminerRepository> logger) : base(context)
         {
             _userManager = userManager;
-            _context = context;
+            _logger = logger;
         }
-    
-        public async Task<IEnumerable<Examiner>> GetAllExaminersAsync()
+
+        public override async Task<IEnumerable<Examiner>> GetAllAsync()
         {
-            return await _userManager.Users
+            return await _context.Users
                 .OfType<Examiner>()
+                .Include(e => e.ExaminerLoads)
                 .ToListAsync();
         }
 
-        public async Task<Examiner>? GetExaminerByIdAsync(string id)
+        public override async Task<IEnumerable<Examiner>> GetPagedAsync(int page, int pageSize)
         {
-            return await _userManager.Users
+            return await _context.Users
                 .OfType<Examiner>()
+                .Include(e => e.ExaminerLoads)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public override async Task<Examiner> GetByIdAsync(string id)
+        {
+            var examiner = await _context.Users
+                .OfType<Examiner>()
+                .Include(e => e.ExaminerLoads)
                 .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (examiner == null)
+                throw new UserNotFoundException($"No examiner with id: {id}");
+
+            return examiner;
         }
 
-        public async Task CreateExaminerAsync(Examiner examiner)
+        public async Task<Examiner> UpdateSpecializationAsync(string id, string specialization)
         {
-            await _userManager.CreateAsync(examiner);
-        }
+            var examiner = await GetByIdAsync(id);
+            examiner.Specialization = specialization;
 
-        public async Task UpdateExaminerAsync(Examiner examiner)
-        {
-            await _userManager.UpdateAsync(examiner);
-        }
-
-        public async Task DeleteExaminerAsync(string id)
-        {
-            var examiner = await _userManager.FindByIdAsync(id);
-            if (examiner != null)
+            var result = await _userManager.UpdateAsync(examiner);
+            if (!result.Succeeded)
             {
-                await _userManager.DeleteAsync(examiner);
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new BadRequestException($"Failed to update examiner specialization: {errors}");
             }
+
+            return examiner;
         }
 
-        public int GetMaxWorkLoad(string id)
+        public async Task<IEnumerable<Track>> GetTracksAsync(string examinerId)
         {
-            throw new NotImplementedException();
+            // First, get tracks where the examiner is assigned as a regular examiner
+            var examinerTracks = await _context.Tracks
+                .Where(t => t.Examiners.Any(e => e.Id == examinerId))
+                .ToListAsync();
+
+            // Then, get tracks where the examiner is assigned as a senior examiner
+            var seniorTracks = await _context.Tracks
+                .Where(t => t.SeniorExaminerID == examinerId)
+                .ToListAsync();
+
+            // Combine and return unique tracks
+            return examinerTracks.Union(seniorTracks).ToList();
         }
 
-        public int GetCurrWorkLoad(string id)
+        public async Task AddTrackToExaminerAsync(string examinerId, int trackId)
         {
-            throw new NotImplementedException();
+            var examiner = await GetByIdAsync(examinerId);
+            var track = await _context.Tracks.FindAsync(trackId);
+
+            if (track == null)
+                throw new KeyNotFoundException($"Track with id {trackId} not found");
+
+            // Check if the examiner is already assigned to this track
+            var isAlreadyAssigned = await _context.Tracks
+                .Where(t => t.Id == trackId)
+                .SelectMany(t => t.Examiners)
+                .AnyAsync(e => e.Id == examinerId);
+
+            if (isAlreadyAssigned)
+                throw new BadImageFormatException("Examiner is already assigned to this track");
+
+            // Assign the examiner to the track
+            track.Examiners.Add(examiner);
+            await _context.SaveChangesAsync();
         }
 
-        public Task<User>? GetUserByIdAsync(string id)
+        public async Task<IEnumerable<ExaminerLoad>> GetWorkloadAsync(string examinerId)
         {
-            throw new NotImplementedException();
+            return await _context.ExaminerLoads
+                .Where(el => el.ExaminerID == examinerId)
+                .ToListAsync();
         }
 
-        public Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<bool> RemoveTrackFromExaminerAsync(string examinerId, int trackId)
         {
-            throw new NotImplementedException();
-        }
+            var examiner = await GetByIdAsync(examinerId);
+            var track = await _context.Tracks
+                .Include(t => t.Examiners)
+                .FirstOrDefaultAsync(t => t.Id == trackId);
 
-        public Task UpdateUserAsync(User user)
-        {
-            throw new NotImplementedException();
-        }
+            if (track == null)
+                return false;
 
-        public Task DeleteUserAsync(string id)
-        {
-            throw new NotImplementedException();
-        }
+            // Check if the examiner is assigned to this track
+            var isAssigned = track.Examiners.Any(e => e.Id == examinerId);
 
-        //public async Task<IEnumerable<Examiner>> GetExaminersByTrackAsync(int trackId)
-        //{
-        //    return await _userManager.Users
-        //        .OfType<Examiner>()
-        //        .Where(e => e.TrackId == trackId)
-        //        .ToListAsync();
-        //}
+            // If the examiner is the senior examiner, we can't remove them
+            if (track.SeniorExaminerID == examinerId)
+                throw new InvalidOperationException("Cannot remove senior examiner from track");
+
+            if (!isAssigned)
+                return false;
+
+            // Remove the examiner from the track
+            track.Examiners.Remove(examiner);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
+   
 }

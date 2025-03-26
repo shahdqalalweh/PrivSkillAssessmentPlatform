@@ -9,12 +9,12 @@ namespace SkillAssessmentPlatform.API.Controllers
     [ApiController]
     public class ApplicantController : ControllerBase
     {
-        private readonly ApplicantService _applicantService;
+       // private readonly ApplicantService _applicantService;
 
-        public ApplicantController(ApplicantService applicantService)
-        {
-            _applicantService = applicantService;
-        }
+     ///   public ApplicantController(ApplicantService applicantService)
+     //   {
+       //     _applicantService = applicantService;
+      //  }
 
         //[HttpGet]
         //public async Task<IActionResult> GetAllApplicants()

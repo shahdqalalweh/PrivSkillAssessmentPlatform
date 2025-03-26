@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Middleware\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SkillAssessmentPlatform.Application\SkillAssessmentPlatform.Application.csproj" />
   </ItemGroup>
 

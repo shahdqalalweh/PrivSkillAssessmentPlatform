@@ -22,6 +22,21 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ExaminerTrack", b =>
+                {
+                    b.Property<string>("ExaminersId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("WorkingTracksId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ExaminersId", "WorkingTracksId");
+
+                    b.HasIndex("WorkingTracksId");
+
+                    b.ToTable("ExaminerTrack");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -51,25 +66,25 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "dab7c4d0-0b55-4af8-9bbf-f06c11debc1f",
+                            Id = "d96ff5a8-1449-4f30-9889-aa87f53894c8",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "2621f9b8-07e3-403c-bb6f-404539928e09",
+                            Id = "1a7d4fd6-99a5-48c7-96ac-92f5572dfb05",
                             Name = "Examiner",
                             NormalizedName = "EXAMINER"
                         },
                         new
                         {
-                            Id = "605e416a-a428-4eef-87d3-795c17e33095",
+                            Id = "6876ca37-1d03-4a73-b9d6-34075637dd6c",
                             Name = "SeniorExaminer",
                             NormalizedName = "SENIOREXAMINER"
                         },
                         new
                         {
-                            Id = "7526f193-77b7-4cd3-af2f-66eedb96eb08",
+                            Id = "413f0cf7-2dd5-4b5f-99f8-4623581cd556",
                             Name = "Applicant",
                             NormalizedName = "APPLICANT"
                         });
@@ -181,7 +196,687 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.ExaminerLoad", b =>
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Certificates_and_Notifications.Certificate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicantId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LeveProgressId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LevelProgressId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VerificationCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicantId");
+
+                    b.HasIndex("LevelProgressId");
+
+                    b.ToTable("Certificates");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Certificates_and_Notifications.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notification");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Enrollment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicantId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("EnrollmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TrackId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicantId");
+
+                    b.HasIndex("TrackId");
+
+                    b.ToTable("Enrollments");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.DetailedFeedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CriterionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EvaluationCriteriaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FeedbackId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EvaluationCriteriaId");
+
+                    b.HasIndex("FeedbackId");
+
+                    b.ToTable("DetailedFeedbacks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.EvaluationCriteria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StageId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("Weight")
+                        .HasColumnType("real");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StageId");
+
+                    b.ToTable("EvaluationCriteria");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.Feedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExaminerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("FeedbackDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TotalScore")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExaminerId");
+
+                    b.ToTable("Feedbacks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Level", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TrackId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TrackId");
+
+                    b.ToTable("Levels");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.LevelProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CompletionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EnrollmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnrollmentId");
+
+                    b.HasIndex("LevelId");
+
+                    b.ToTable("LevelProgresses");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Stage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LevelId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PassingScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LevelId");
+
+                    b.ToTable("Stages");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.StageProgress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CompletionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EnrollmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExaminerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("LevelProgressId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExaminerId");
+
+                    b.HasIndex("LevelProgressId");
+
+                    b.HasIndex("StageId");
+
+                    b.ToTable("StageProgresses");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Appointment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExaminerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsBooked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExaminerId");
+
+                    b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Exam", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("QuestionsType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StageId")
+                        .IsUnique();
+
+                    b.ToTable("Exams");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.ExamRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FeedbackId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExamId")
+                        .IsUnique();
+
+                    b.HasIndex("FeedbackId")
+                        .IsUnique();
+
+                    b.ToTable("ExamRequests");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Interview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxDaysToBook")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StageId")
+                        .IsUnique();
+
+                    b.ToTable("Interviews");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.InterviewBook", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FeedbackId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("InterviewId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MeetingLink")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("FeedbackId")
+                        .IsUnique();
+
+                    b.HasIndex("InterviewId");
+
+                    b.ToTable("InterviewBooks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Task", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Requirements")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TaskPoolId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TasksPoolId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TasksPoolId");
+
+                    b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskApplicant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApplicantId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AssignedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("StageProgressId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StageProgressId");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("TaskApplicants");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskSubmission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FeedbackId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmissionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SubmissionUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TaskApplicantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeedbackId")
+                        .IsUnique();
+
+                    b.HasIndex("TaskApplicantId");
+
+                    b.ToTable("TaskSubmissions");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TasksPool", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DaysToSubmit")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Requirements")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StageId");
+
+                    b.ToTable("TasksPools");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Track", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AssociatedSkills")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Objectives")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SeniorExaminerID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SeniorExaminerID");
+
+                    b.ToTable("Tracks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.ExaminerLoad", b =>
                 {
                     b.Property<string>("ExaminerID")
                         .HasColumnType("nvarchar(450)");
@@ -200,7 +895,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasKey("ExaminerID", "Type");
 
-                    b.ToTable("ExaminerLoad");
+                    b.ToTable("ExaminerLoads");
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.User", b =>
@@ -229,7 +924,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Gendar")
+                    b.Property<int?>("Gender")
                         .HasColumnType("int");
 
                     b.Property<string>("Image")
@@ -304,7 +999,27 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasIndex("UserId");
+
                     b.ToTable("Examiners", (string)null);
+                });
+
+            modelBuilder.Entity("ExaminerTrack", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Examiner", null)
+                        .WithMany()
+                        .HasForeignKey("ExaminersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Track", null)
+                        .WithMany()
+                        .HasForeignKey("WorkingTracksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -358,7 +1073,315 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.ExaminerLoad", b =>
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Certificates_and_Notifications.Certificate", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Applicant", "Applicant")
+                        .WithMany("Certificates")
+                        .HasForeignKey("ApplicantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.LevelProgress", "LevelProgress")
+                        .WithMany("Certificates")
+                        .HasForeignKey("LevelProgressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Applicant");
+
+                    b.Navigation("LevelProgress");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Certificates_and_Notifications.Notification", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Enrollment", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Applicant", "Applicant")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("ApplicantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Track", "Track")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("TrackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Applicant");
+
+                    b.Navigation("Track");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.DetailedFeedback", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.EvaluationCriteria", "EvaluationCriteria")
+                        .WithMany("DetailedFeedbacks")
+                        .HasForeignKey("EvaluationCriteriaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.Feedback", "Feedback")
+                        .WithMany("DetailedFeedbacks")
+                        .HasForeignKey("FeedbackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EvaluationCriteria");
+
+                    b.Navigation("Feedback");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.EvaluationCriteria", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Stage", "Stage")
+                        .WithMany("EvaluationCriteria")
+                        .HasForeignKey("StageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Stage");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.Feedback", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Examiner")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("ExaminerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Examiner");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Level", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Track", "Track")
+                        .WithMany("Levels")
+                        .HasForeignKey("TrackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Track");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.LevelProgress", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Enrollment", "Enrollment")
+                        .WithMany("LevelProgresses")
+                        .HasForeignKey("EnrollmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Level", "Level")
+                        .WithMany("LevelProgresses")
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Enrollment");
+
+                    b.Navigation("Level");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Stage", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Level", "Level")
+                        .WithMany("Stages")
+                        .HasForeignKey("LevelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Level");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.StageProgress", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Examiner")
+                        .WithMany("SupervisedStages")
+                        .HasForeignKey("ExaminerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.LevelProgress", "LevelProgress")
+                        .WithMany("StageProgresses")
+                        .HasForeignKey("LevelProgressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Stage", "Stage")
+                        .WithMany("StageProgresses")
+                        .HasForeignKey("StageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Examiner");
+
+                    b.Navigation("LevelProgress");
+
+                    b.Navigation("Stage");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Appointment", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Examiner")
+                        .WithMany("Appointments")
+                        .HasForeignKey("ExaminerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Examiner");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Exam", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Stage", "Stage")
+                        .WithOne("Exam")
+                        .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Exam", "StageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Stage");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.ExamRequest", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Exam", "Exam")
+                        .WithOne("ExamRequest")
+                        .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.ExamRequest", "ExamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.Feedback", "Feedback")
+                        .WithOne("ExamRequest")
+                        .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.ExamRequest", "FeedbackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Exam");
+
+                    b.Navigation("Feedback");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Interview", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Stage", "Stage")
+                        .WithOne("Interview")
+                        .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Interview", "StageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Stage");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.InterviewBook", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Appointment", "Appointment")
+                        .WithMany("InterviewBooks")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.Feedback", "Feedback")
+                        .WithOne("InterviewBook")
+                        .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.InterviewBook", "FeedbackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Interview", "Interview")
+                        .WithMany("InterviewBooks")
+                        .HasForeignKey("InterviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Feedback");
+
+                    b.Navigation("Interview");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Task", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TasksPool", "TasksPool")
+                        .WithMany("Tasks")
+                        .HasForeignKey("TasksPoolId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TasksPool");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskApplicant", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.StageProgress", "StageProgress")
+                        .WithMany("TaskApplicants")
+                        .HasForeignKey("StageProgressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Task", "Task")
+                        .WithMany("TaskApplicants")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StageProgress");
+
+                    b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskSubmission", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.Feedback", "Feedback")
+                        .WithOne("TaskSubmission")
+                        .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskSubmission", "FeedbackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskApplicant", "TaskApplicant")
+                        .WithMany("TaskSubmissions")
+                        .HasForeignKey("TaskApplicantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Feedback");
+
+                    b.Navigation("TaskApplicant");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TasksPool", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Stage", "Stage")
+                        .WithMany("TasksPools")
+                        .HasForeignKey("StageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Stage");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Track", b =>
+                {
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "SeniorExaminer")
+                        .WithMany("ManagedTracks")
+                        .HasForeignKey("SeniorExaminerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SeniorExaminer");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.ExaminerLoad", b =>
                 {
                     b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Examiner")
                         .WithMany("ExaminerLoads")
@@ -385,11 +1408,133 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                         .HasForeignKey("SkillAssessmentPlatform.Core.Entities.Users.Examiner", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("SkillAssessmentPlatform.Core.Entities.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Enrollment", b =>
+                {
+                    b.Navigation("LevelProgresses");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.EvaluationCriteria", b =>
+                {
+                    b.Navigation("DetailedFeedbacks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.Feedback", b =>
+                {
+                    b.Navigation("DetailedFeedbacks");
+
+                    b.Navigation("ExamRequest")
+                        .IsRequired();
+
+                    b.Navigation("InterviewBook")
+                        .IsRequired();
+
+                    b.Navigation("TaskSubmission")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Level", b =>
+                {
+                    b.Navigation("LevelProgresses");
+
+                    b.Navigation("Stages");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.LevelProgress", b =>
+                {
+                    b.Navigation("Certificates");
+
+                    b.Navigation("StageProgresses");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Stage", b =>
+                {
+                    b.Navigation("EvaluationCriteria");
+
+                    b.Navigation("Exam")
+                        .IsRequired();
+
+                    b.Navigation("Interview")
+                        .IsRequired();
+
+                    b.Navigation("StageProgresses");
+
+                    b.Navigation("TasksPools");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.StageProgress", b =>
+                {
+                    b.Navigation("TaskApplicants");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Appointment", b =>
+                {
+                    b.Navigation("InterviewBooks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Exam", b =>
+                {
+                    b.Navigation("ExamRequest")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Interview", b =>
+                {
+                    b.Navigation("InterviewBooks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Task", b =>
+                {
+                    b.Navigation("TaskApplicants");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskApplicant", b =>
+                {
+                    b.Navigation("TaskSubmissions");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TasksPool", b =>
+                {
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Track", b =>
+                {
+                    b.Navigation("Enrollments");
+
+                    b.Navigation("Levels");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.User", b =>
+                {
+                    b.Navigation("Notifications");
+                });
+
+            modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Applicant", b =>
+                {
+                    b.Navigation("Certificates");
+
+                    b.Navigation("Enrollments");
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.Examiner", b =>
                 {
+                    b.Navigation("Appointments");
+
                     b.Navigation("ExaminerLoads");
+
+                    b.Navigation("Feedbacks");
+
+                    b.Navigation("ManagedTracks");
+
+                    b.Navigation("SupervisedStages");
                 });
 #pragma warning restore 612, 618
         }

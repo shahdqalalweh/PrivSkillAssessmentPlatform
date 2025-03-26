@@ -8,40 +8,64 @@
 namespace SkillAssessmentPlatform.API.Bases
 {
 
- 
+   
+      public class ResponseHandler : IResponseHandler
+      {
+          public IActionResult Success<T>(T entity, string message = "Success", object meta = null)
+          {
+              return new OkObjectResult(new Response<T>(entity, message, HttpStatusCode.OK) { Meta = meta });
+          }
+        public IActionResult Success(string message = "Success", object meta = null)
+        {
+            return new OkObjectResult(new Response<string>(message, HttpStatusCode.OK) { Meta = meta });
+        }
+        public IActionResult Created<T>(T entity, string message = "Created Successfully", object meta = null)
+          {
+              return new ObjectResult(new Response<T>(entity, message, HttpStatusCode.Created) { Meta = meta })
+              {
+                  StatusCode = (int)HttpStatusCode.Created
+              };
+          }
+          public IActionResult Deleted()
+          {
+              return new OkObjectResult(new Response<string>(null, "Deleted Successfully", HttpStatusCode.OK));
+          }
+          public IActionResult Unauthorized()
+          {
+              return new UnauthorizedObjectResult(new Response<string>(null, "Unauthorized", HttpStatusCode.Unauthorized));
+          }
+          public IActionResult BadRequest(string message = "Bad Request", List<string> errors = null)
+          {
+              return new BadRequestObjectResult(new Response<string>(message, HttpStatusCode.BadRequest) { Errors = errors });
+          }
+          public IActionResult BadRequest(string message = "Bad Request", HttpStatusCode httpStatusCode = HttpStatusCode.BadRequest, List<string> errors = null)
+          {
+              return new BadRequestObjectResult(new Response<string>(message, httpStatusCode) { Errors = errors });
+          }
+          public IActionResult NotFound(string message = "Not Found")
+          {
+              return new NotFoundObjectResult(new Response<string>(message, HttpStatusCode.NotFound));
+          }
+      }
+      /*
+
     public class ResponseHandler : IResponseHandler
     {
-        public IActionResult Success<T>(T entity, object meta = null)
+        public IActionResult HandleResponse<T>(Response<T> response)
         {
-            return new OkObjectResult(new Response<T>(entity, "Success", HttpStatusCode.OK) { Meta = meta });
-        }
-        public IActionResult Created<T>(T entity, object meta = null)
-        {
-            return new ObjectResult(new Response<T>(entity, "Created Successfully", HttpStatusCode.Created) { Meta = meta })
+            return response.StatusCode switch
             {
-                StatusCode = (int)HttpStatusCode.Created
+                HttpStatusCode.OK => new OkObjectResult(response),
+                HttpStatusCode.Created => new ObjectResult(response) { StatusCode = (int)HttpStatusCode.Created },
+                HttpStatusCode.NoContent => new NoContentResult(),
+                HttpStatusCode.BadRequest => new BadRequestObjectResult(response),
+                HttpStatusCode.Unauthorized => new UnauthorizedObjectResult(response),
+                HttpStatusCode.Forbidden => new ObjectResult(response) { StatusCode = (int)HttpStatusCode.Forbidden },
+                HttpStatusCode.NotFound => new NotFoundObjectResult(response),
+                _ => new ObjectResult(response) { StatusCode = (int)HttpStatusCode.InternalServerError } // defualt Internal Server Error
             };
         }
-        public IActionResult Deleted()
-        {
-            return new OkObjectResult(new Response<string>(null, "Deleted Successfully", HttpStatusCode.OK));
-        }
-        public IActionResult Unauthorized()
-        {
-            return new UnauthorizedObjectResult(new Response<string>(null, "Unauthorized", HttpStatusCode.Unauthorized));
-        }
-        public IActionResult BadRequest(string message = "Bad Request", List<string> errors = null)
-        {
-            return new BadRequestObjectResult(new Response<string>(message, HttpStatusCode.BadRequest) { Errors = errors });
-        }
-        public IActionResult BadRequest(string message = "Bad Request", HttpStatusCode httpStatusCode = HttpStatusCode.BadRequest, List<string> errors = null)
-        {
-            return new BadRequestObjectResult(new Response<string>(message, httpStatusCode) { Errors = errors });
-        }
-        public IActionResult NotFound(string message = "Not Found")
-        {
-            return new NotFoundObjectResult(new Response<string>(message, HttpStatusCode.NotFound));
-        }
     }
+      */
 
 }

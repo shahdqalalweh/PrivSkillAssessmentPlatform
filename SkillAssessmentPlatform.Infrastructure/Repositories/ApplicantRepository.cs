@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using SkillAssessmentPlatform.Core.Entities;
+using SkillAssessmentPlatform.Core.Entities.Certificates_and_Notifications;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Enums;
-using SkillAssessmentPlatform.Core.Interfaces;
+using SkillAssessmentPlatform.Core.Exceptions;
+using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
@@ -13,87 +16,162 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
-    public class ApplicantRepository :IApplicantRepository
+
+    public class ApplicantRepository : Repository<Applicant>,IApplicantRepository
     {
         private readonly UserManager<User> _userManager;
-        private readonly AppDbContext _dbContext;
         private readonly ILogger<ApplicantRepository> _logger;
 
-        public ApplicantRepository(UserManager<User> userManager, 
-            AppDbContext dbContext,
-            ILogger<ApplicantRepository> logger)
-           { 
+        public ApplicantRepository(
+            AppDbContext context,
+            UserManager<User> userManager,
+            ILogger<ApplicantRepository> logger) : base(context)
+        {
             _userManager = userManager;
-            _dbContext = dbContext;
             _logger = logger;
         }
 
-        public async Task<IEnumerable<Applicant>> GetAllApplicantsAsync()
+        public override async Task<IEnumerable<Applicant>> GetAllAsync()
         {
-            return await _userManager.Users
+            return await _context.Users
                 .OfType<Applicant>()
                 .ToListAsync();
         }
 
-        public async Task<Applicant> GetApplicantByIdAsync(string id)
+        public override async Task<IEnumerable<Applicant>> GetPagedAsync(int page, int pageSize)
         {
-            return await _userManager.Users
+            return await _context.Users
+                .OfType<Applicant>()
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public override async Task<Applicant> GetByIdAsync(string id)
+        {
+            var applicant = await _context.Users
                 .OfType<Applicant>()
                 .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (applicant == null)
+                throw new UserNotFoundException($"No applicant with id: {id}");
+
+            return applicant;
         }
 
-        public async Task CreateApplicantAsync(Applicant applicant)
+        public async Task<Applicant> UpdateStatusAsync(string id, ApplicantStatus status)
         {
-            await _userManager.CreateAsync(applicant);
-        }
+            var applicant = await GetByIdAsync(id);
+            applicant.Status = status;
 
-        public async Task UpdateApplicantAsync(Applicant applicant)
-        {
-            await _userManager.UpdateAsync(applicant);
-        }
-
-        public async Task DeleteApplicantAsync(string id)
-        {
-            var applicant = await _userManager.FindByIdAsync(id);
-            if (applicant != null)
+            var result = await _userManager.UpdateAsync(applicant);
+            if (!result.Succeeded)
             {
-                await _userManager.DeleteAsync(applicant);
+                throw new BadRequestException($"Failed to update applicant status", result.Errors);
             }
+
+            return applicant;
         }
 
-        public ApplicantStatus GetApplicantStatus()
+        public async Task<IEnumerable<Enrollment>> GetEnrollmentsAsync(string applicantId)
         {
-            throw new NotImplementedException();
+            return await _context.Enrollments
+                .Where(e => e.ApplicantId == applicantId)
+                .Include(e => e.Track)
+                .ToListAsync();
         }
 
-        public Task<User>? GetUserByIdAsync(string id)
+        public async Task<IEnumerable<Certificate>> GetCertificatesAsync(string applicantId)
         {
-            throw new NotImplementedException();
+            return await _context.Certificates
+                .Where(c => c.ApplicantId == applicantId)
+                .Include(c => c.LevelProgress)
+                    .ThenInclude(lp => lp.Level)
+                .ToListAsync();
         }
 
-        public Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<Enrollment> EnrollInTrackAsync(string applicantId, int trackId)
         {
-            throw new NotImplementedException();
+            
+            // Check if enrollment already exists
+            var existingEnrollment = await _context.Enrollments
+                .FirstOrDefaultAsync(e => e.ApplicantId == applicantId && e.TrackId == trackId);
+
+            if (existingEnrollment != null)
+                throw new BadRequestException("Applicant is already enrolled in this track");
+
+            // Check if track exists
+            var track = await _context.Tracks.FindAsync(trackId);
+            if (track == null)
+                throw new KeyNotFoundException($"Track with id {trackId} not found");
+
+            // Create enrollment
+            var enrollment = new Enrollment
+            {
+                ApplicantId = applicantId,
+                TrackId = trackId,
+                EnrollmentDate = DateTime.Now,
+                Status = "Active"
+            };
+
+            await _context.Enrollments.AddAsync(enrollment);
+            await _context.SaveChangesAsync();
+
+            // Get the first level of the track
+            var firstLevel = await _context.Levels
+                .Where(l => l.TrackId == trackId && l.Order == 1 && l.IsActive)
+                .FirstOrDefaultAsync();
+
+            if (firstLevel != null)
+            {
+                // Create level progress
+                var levelProgress = new LevelProgress
+                {
+                    EnrollmentId = enrollment.Id,
+                    LevelId = firstLevel.Id,
+                    Status = "InProgress",
+                    StartDate = DateTime.Now
+                };
+
+                await _context.LevelProgresses.AddAsync(levelProgress);
+
+                // Get the first stage of the level
+                var firstStage = await _context.Stages
+                    .Where(s => s.LevelId == firstLevel.Id && s.Order == 1 && s.IsActive)
+                    .FirstOrDefaultAsync();
+
+                if (firstStage != null)
+                {
+                    // Create stage progress
+                    var stageProgress = new StageProgress
+                    {
+                        EnrollmentId = enrollment.Id,
+                        StageId = firstStage.Id,
+                        Status = "InProgress",
+                        StartDate = DateTime.Now,
+                        Attempts = 1
+                    };
+
+                    await _context.StageProgresses.AddAsync(stageProgress);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            
+            
+            //var enrollment = new Enrollment();
+            return enrollment;
         }
 
-        public Task UpdateUserAsync(User user)
+        public async Task<IEnumerable<LevelProgress>> GetProgressAsync(string applicantId)
         {
-            throw new NotImplementedException();
+            return await _context.LevelProgresses
+                .Include(lp => lp.Level)
+                    .ThenInclude(l => l.Track)
+                .Include(lp => lp.Enrollment)
+                .Where(lp => lp.Enrollment.ApplicantId == applicantId)
+                .ToListAsync();
         }
-
-        public Task DeleteUserAsync(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        //public async Task EnrollApplicantInTrackAsync(string applicantId, int trackId)
-        //{
-        //    var applicant = await _userManager.FindByIdAsync(applicantId) as Applicant;
-        //    if (applicant != null)
-        //    {
-        //        applicant.TrackId = trackId;
-        //        await _userManager.UpdateAsync(applicant);
-        //    }
-        //}
     }
+    
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Application.Services
 {
-        public class ExaminerService
+   /*     public class ExaminerService
         {
             private readonly IExaminerRepository _examinerRepository;
 
@@ -47,5 +47,5 @@ namespace SkillAssessmentPlatform.Application.Services
             //    return await _examinerRepository.GetExaminersByTrackAsync(trackId);
             //}
         }
-    
+    */
 }

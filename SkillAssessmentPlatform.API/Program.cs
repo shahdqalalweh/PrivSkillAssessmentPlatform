@@ -8,10 +8,12 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SkillAssessmentPlatform.API.Bases;
 using SkillAssessmentPlatform.API.Common;
+using SkillAssessmentPlatform.API.Middleware;
 using SkillAssessmentPlatform.Application.Mapping;
 using SkillAssessmentPlatform.Application.Services;
 using SkillAssessmentPlatform.Core.Entities.Users;
-using SkillAssessmentPlatform.Core.Interfaces;
+using SkillAssessmentPlatform.Core.Enums;
+using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
 using SkillAssessmentPlatform.Infrastructure.ExternalServices;
 using SkillAssessmentPlatform.Infrastructure.Repositories;
@@ -46,7 +48,7 @@ namespace SkillAssessmentPlatform.API
                                         options.TokenLifespan = TimeSpan.FromHours(7));
 
             builder.Services.AddLogging();
-            //builder.Services.AddScoped<IRepository<T>, Repository<T>>();
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
@@ -54,7 +56,8 @@ namespace SkillAssessmentPlatform.API
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<IResponseHandler, ResponseHandler>();
-
+            builder.Services.AddScoped<UserService>();
+            builder.Services.AddSingleton<IFileService, FileService>();
 
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddScoped<EmailServices>();
@@ -97,12 +100,8 @@ namespace SkillAssessmentPlatform.API
             var app = builder.Build();
             app.UseCors("AllowAll");
 
-            //using (var scope = app.Services.CreateScope())
-            //{
-            //    var services = scope.ServiceProvider;
-            //    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            //    await SeedRoles(roleManager);
-            //}
+            app.UseMiddleware<ErrorHandlerMiddleware>();
+
 
             using (var scope = app.Services.CreateScope())
             {
@@ -161,7 +160,8 @@ namespace SkillAssessmentPlatform.API
                     Email = adminEmail,
                     EmailConfirmed = true,
                     UserType = Actors.Admin,
-                    FullName = "Admin"
+                    FullName = "Admin",
+                    Gender = Gender.Female
                 };
 
                 var result = await userManager.CreateAsync(adminUser, adminPassword);

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Application.Services
 {
+    /*
         public class ApplicantService
         {
             private readonly IApplicantRepository _applicantRepository;
@@ -47,5 +48,5 @@ namespace SkillAssessmentPlatform.Application.Services
             //    await _applicantRepository.EnrollApplicantInTrackAsync(applicantId, trackId);
             //}
         }
-   
+   */
 }

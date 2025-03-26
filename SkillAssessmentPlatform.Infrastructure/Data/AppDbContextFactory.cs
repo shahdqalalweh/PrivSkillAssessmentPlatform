@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Infrastructure.Data
-{
+{/*
     public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         public AppDbContext CreateDbContext(string[] args)
@@ -17,5 +17,5 @@ namespace SkillAssessmentPlatform.Infrastructure.Data
 
             return new AppDbContext(optionsBuilder.Options);
         }
-    }
+    }*/
 }

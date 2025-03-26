@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NETCore.MailKit.Core;
-using SkillAssessmentPlatform.Application.DTOs;
+using SkillAssessmentPlatform.Application.DTOs.Auth;
 using SkillAssessmentPlatform.Core.Common;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Exceptions;
-using SkillAssessmentPlatform.Core.Interfaces;
+using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.ExternalServices;
 using SkillAssessmentPlatform.Infrastructure.Repositories;
 
@@ -31,7 +31,7 @@ namespace SkillAssessmentPlatform.Application.Services
         private readonly TokenService _tokenService;
         private readonly EmailServices _emailService;
 
-        public AuthService(IAuthRepository authRepository, 
+        public AuthService(IAuthRepository authRepository,
             IMapper mapper,
             ILogger<AuthService> logger,
             TokenService tokenService,
@@ -43,98 +43,35 @@ namespace SkillAssessmentPlatform.Application.Services
             _tokenService = tokenService;
             _emailService = emailService;
         }
-        /*
+
         public async Task<string> RegisterApplicantAsync(UserRegisterDTO dto)
-        {
-            if(dto == null)
-            {
-                return "0";
-            }
-            if (string.IsNullOrWhiteSpace(dto.Password))
-            {
-                return "0";
-            }
-
-            var user = _mapper.Map<User>(dto);
-
-            return await _authRepository.RegisterApplicantAsync(user, dto.Password);
-        }
-        */
-            public async Task<Response<Applicant>> RegisterApplicantAsync(UserRegisterDTO dto)
-            {
-                if (dto == null || string.IsNullOrWhiteSpace(dto.Password))
-                {
-                    return new Response<Applicant>(null, "Invalid input data", HttpStatusCode.BadRequest);
-                }
-
-                try
-                {
-                    var user = _mapper.Map<User>(dto);
-                    var applicant = await _authRepository.RegisterApplicantAsync(user, dto.Password);
-
-                    return new Response<Applicant>(applicant,"User registered & email sent", HttpStatusCode.OK);
-                }
-                catch (UserException ex)
-                {
-                    return new Response<Applicant>( "User creation failed", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-                }
-                catch (Exception)
-                {
-                    return new Response<Applicant>("User registered but email sending failed", HttpStatusCode.InternalServerError);
-                }
-            }
-
-        public async Task<Response<Examiner>> RegisterExaminerAsync(UserRegisterDTO dto)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Password))
             {
-                return new Response<Examiner>(null, "Invalid input data", HttpStatusCode.BadRequest);
+                throw new ArgumentException("Invalid input data");
             }
 
-            try
-            {
-                var user = _mapper.Map<User>(dto);
-                var examiner = await _authRepository.RegisterExaminerAsync(user, dto.Password);
-
-                return new Response<Examiner>(examiner, "User registered & email sent", HttpStatusCode.OK);
-            }
-            catch (UserException ex)
-            {
-                return new Response<Examiner>("User creation failed", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            catch (Exception)
-            {
-                return new Response<Examiner>("User registered but email sending failed", HttpStatusCode.InternalServerError);
-            }
+            var user = _mapper.Map<User>(dto);
+            return await _authRepository.RegisterApplicantAsync(user, dto.Password);
         }
-        public async Task<Response<string>> EmailConfirmationAsync(string email, string token)
+
+        public async Task<string> RegisterExaminerAsync(UserRegisterDTO dto)
         {
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Password))
             {
-                return new Response<string>(null, "Email or token is missing.", HttpStatusCode.BadRequest);
+                throw new BadRequestException("Invalid input data");
             }
 
-            try
-            {
-                await _authRepository.EmailConfirmation(email, token);
-                return new Response<string>("Confirmation succeeded", "Email successfully confirmed.", HttpStatusCode.OK);
-            }
-            catch (UserException ex)
-            {
-                return new Response<string>("Email confirmation error" ,HttpStatusCode.BadRequest, new List<string> { ex.Message });
-
-            }
-            catch (UserNotFoundException ex)
-            {
-                return new Response<string>("Email is no valid", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($" Unexpected error during email confirmation: {ex.Message}");
-                return new Response<string>(null, "Email confirmation failed due to an unexpected error.", HttpStatusCode.InternalServerError);
-            }
+            var user = _mapper.Map<User>(dto);
+            return await _authRepository.RegisterExaminerAsync(user, dto.Password);
         }
+        public async Task EmailConfirmationAsync(string email, string token)
+        {
 
+            await _authRepository.EmailConfirmation(email, token);
+        }
+        /*
+         * old login
         public async Task<Response<string>> LogInAsync(LoginDTO loginDTO)
         {
             try
@@ -143,7 +80,7 @@ namespace SkillAssessmentPlatform.Application.Services
                 var token = _tokenService.GenerateToken(user);
                 return new Response<string>(token, HttpStatusCode.OK);
 
-            } catch (UserException ex)
+            } catch (BadRequestException ex)
             {
                 return new Response<string>("Not correct Password", HttpStatusCode.BadRequest, new List<string> { ex.Message });
             }
@@ -157,81 +94,29 @@ namespace SkillAssessmentPlatform.Application.Services
             }
 
         }
-        public async Task<Response<string>> ForgotPasswordAsync(string email)
+        */
+        public async Task<string> LogInAsync(LoginDTO loginDTO)
         {
-            try
-            {
-                await _authRepository.ForgotPasswordAsync(email);
-                return new Response<string>("Email sent", HttpStatusCode.OK);
-            }
-            catch (UserNotFoundException ex)
-            {
-                return new Response<string>("Email is not exist", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            catch (Exception)
-            {
-                return new Response<string>("User registered but email sending failed", HttpStatusCode.InternalServerError);
-            }
-
-        }
-        public async Task<Response<string>> ResetPasswordAsync(ResetPasswordDTO dto)
-        {
-            try
-            {
-                await _authRepository.ResetPassword(dto.Email, dto.Password, dto.Token);
-                return new Response<string>("Password reset successful", HttpStatusCode.OK);
-            }
-            catch (UserException ex)
-            {
-                return new Response<string>("Error resetting password", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            catch (UserNotFoundException ex)
-            {
-                return new Response<string>("Email is not exist", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return new Response<string>( "Email reseting failed due to an unexpected error.", HttpStatusCode.InternalServerError, new List<string> { ex.Message });
-            }
-
-        }
-        public async Task<Response<string>> ChangePasswordAsync(ChangePasswordDTO dto)
-        {
-            try
-            {
-                await _authRepository.ChangePasswordAsync(dto.Email, dto.OldPassword, dto.NewPassword);
-                return new Response<string>("Password change successfully", HttpStatusCode.OK);
-            }
-            catch (UserNotFoundException ex)
-            {
-                return new Response<string>("Email is not exist", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            catch (UserException ex)
-            {
-                return new Response<string>("Cahnging Password field", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            
-        }
-        public async Task DeleteUserAsync(string id)
-        {
-            await _authRepository.DeleteUserAsync(id);
+            var user = await _authRepository.LogInAsync(loginDTO.Email, loginDTO.Password);
+            return _tokenService.GenerateToken(user);
         }
 
-        public async Task<Response<string>> UpdateUserEmail(string userId, string newEmail)
+        public async Task ForgotPasswordAsync(string email)
         {
-            try
-            {
-                await _authRepository.UpdateUserEmail(userId, newEmail);
-                return new Response<string>("Email updated", HttpStatusCode.OK);
-            }
-            catch (UserException ex)
-            {
-                return new Response<string>("Field", HttpStatusCode.BadRequest, new List<string> { ex.Message });
-            }
-            catch (Exception)
-            {
-                return new Response<string>("Field", HttpStatusCode.InternalServerError);
-            }
+            await _authRepository.ForgotPasswordAsync(email);
+        }
+        public async Task ResetPasswordAsync(ResetPasswordDTO dto)
+        {
+            await _authRepository.ResetPassword(dto.Email, dto.Password, dto.Token);
+        }
+        public async Task ChangePasswordAsync(ChangePasswordDTO dto)
+        {
+            await _authRepository.ChangePasswordAsync(dto.Email, dto.OldPassword, dto.NewPassword);
+        }
+
+        public async Task UpdateUserEmailAsync(string userId, string newEmail)
+        {
+            await _authRepository.UpdateUserEmail(userId, newEmail);
         }
     }
 }

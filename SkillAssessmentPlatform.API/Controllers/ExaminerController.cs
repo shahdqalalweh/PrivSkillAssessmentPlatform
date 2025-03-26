@@ -10,13 +10,13 @@ namespace SkillAssessmentPlatform.API.Controllers
 
     public class ExaminerController : ControllerBase
     {
-        private readonly ExaminerService _examinerService;
+     /*   private readonly ExaminerService _examinerService;
 
         public ExaminerController(ExaminerService examinerService)
         {
             _examinerService = examinerService;
         }
-
+*/
         //[HttpGet]
         //public async Task<IActionResult> GetAllExaminers()
         //{

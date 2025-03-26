@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SkillAssessmentPlatform.Core.Entities.Certificates_and_Notifications;
 using SkillAssessmentPlatform.Core.Enums;
 using System;
 using System.Collections.Generic;
@@ -13,5 +14,7 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
     {
         public ApplicantStatus Status { get; set; }
 
+        public ICollection<Enrollment> Enrollments { get; set; }
+        public ICollection<Certificate> Certificates { get; set; }
     }
 }

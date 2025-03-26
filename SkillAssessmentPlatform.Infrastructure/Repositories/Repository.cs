@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SkillAssessmentPlatform.Core.Interfaces;
+using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
@@ -68,6 +68,10 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
             return true;
+        }
+        public virtual async Task<int> GetTotalCountAsync()
+        {
+            return await _dbSet.CountAsync();
         }
     }
 }

@@ -4,13 +4,14 @@ using Microsoft.Extensions.Logging;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Enums;
 using SkillAssessmentPlatform.Core.Exceptions;
-using SkillAssessmentPlatform.Core.Interfaces;
+using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
@@ -30,155 +31,114 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
 
         public override async Task<User> GetByIdAsync(string id)
         {
-            try
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
             {
-                var user = await _userManager.FindByIdAsync(id);
-                if (user == null)
-                {
-                    _logger.LogWarning("User with ID {UserId} not found", id);
-                    throw new UserNotFoundException($"No user with id: {id}");
-                }
-                return user;
+                _logger.LogWarning("User with ID {UserId} not found", id);
+                throw new UserNotFoundException($"No user with id: {id}");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting user by ID {UserId}", id);
-                throw;
-            }
+            return user;
         }
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            try
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
             {
-                var user = await _userManager.FindByEmailAsync(email);
-                if (user == null)
-                {
-                    _logger.LogWarning("User with email {Email} not found", email);
-                    throw new UserNotFoundException($"No user with email: {email}");
-                }
-                return user;
+                _logger.LogWarning("User with email {Email} not found", email);
+                throw new UserNotFoundException($"No user with email: {email}");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting user by email {Email}", email);
-                throw;
-            }
+            return user;
         }
 
         public async Task<IEnumerable<User>> GetUsersByTypeAsync(Actors userType, int page = 1, int pageSize = 10)
         {
-            try
-            {
-                return await _userManager.Users
-                    .Where(u => u.UserType == userType)
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting users by type {UserType}", userType);
-                throw;
-            }
+            return await _userManager.Users
+                .Where(u => u.UserType == userType)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+        public async Task<int> GetCountByTypeAsync(Actors userType)
+        {
+            return await _userManager.Users
+                .Where(u => u.UserType == userType)
+                .CountAsync();
         }
 
         public async Task<IEnumerable<User>> SearchUsersAsync(string searchTerm, Actors userType)
         {
-            try
+            var query = _userManager.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var query = _userManager.Users.AsQueryable();
-
-                if (!string.IsNullOrWhiteSpace(searchTerm))
-                {
-                    query = query.Where(u =>
-                        u.Email.Contains(searchTerm) ||
-                        u.UserName.Contains(searchTerm) ||
-                        u.FullName.Contains(searchTerm)
-                    );
-                }
-
-                if (userType.HasValue)
-                {
-                    query = query.Where(u => u.UserType == userType.Value);
-                }
-
-                return await query.ToListAsync();
+                query = query.Where(u =>
+                    u.Email.Contains(searchTerm) ||
+                    u.FullName.Contains(searchTerm)
+                );
             }
-            catch (Exception ex)
+
+            if (userType != null)
             {
-                _logger.LogError(ex, "Error occurred while searching users with term {SearchTerm}", searchTerm);
-                throw;
+                query = query.Where(u => u.UserType == userType);
             }
+
+            return await query.ToListAsync();
         }
 
         public override async Task<User> UpdateAsync(User user)
         {
-            try
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
             {
-                var result = await _userManager.UpdateAsync(user);
-                if (!result.Succeeded)
-                {
-                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    _logger.LogWarning("Failed to update user {UserId}: {Errors}", user.Id, errors);
-                    throw new UserUpdateException($"Failed to update user: {errors}");
-                }
-                return user;
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                _logger.LogWarning("Failed to update user {UserId}: {Errors}", user.Id, errors);
+                throw new BadRequestException($"Failed to update user", result.Errors);
             }
-            catch (Exception ex) when (!(ex is UserUpdateException))
-            {
-                _logger.LogError(ex, "Error occurred while updating user {UserId}", user.Id);
-                throw;
-            }
+            return user;
+
         }
 
         public override async Task<bool> DeleteAsync(string id)
         {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(id);
-                if (user == null)
-                    return false;
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                throw new UserNotFoundException($"No User with id: {id}");
 
-                var result = await _userManager.DeleteAsync(user);
-                return result.Succeeded;
-            }
-            catch (Exception ex)
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
             {
-                _logger.LogError(ex, "Error occurred while deleting user {UserId}", id);
-                throw;
+                _logger.LogWarning("Failed to delete user {UserId} ", user.Id);
+                throw new BadRequestException($"Failed to delete user", result.Errors);
             }
+            return result.Succeeded;
         }
+     
 
-        public async Task<bool> UpdateUserRoleAsync(string userId, Actors newRole)
+        public async Task<bool> UpdateUserRoleAsync(string Id, Actors newRole)
         {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user == null)
-                    return false;
 
-                // Get current roles
-                var currentRoles = await _userManager.GetRolesAsync(user);
+            var user = await _userManager.FindByIdAsync(Id);
+            if (user == null)
+                throw new UserNotFoundException($"No User with id: {Id}");
 
-                // Remove current roles
-                if (currentRoles.Any())
-                    await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            // Get current roles
+            var currentRoles = await _userManager.GetRolesAsync(user);
 
-                // Add new role
-                var result = await _userManager.AddToRoleAsync(user, newRole.ToString());
+            // Remove current roles
+            if (currentRoles.Any())
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
-                // Update user type
-                user.UserType = newRole;
-                await _userManager.UpdateAsync(user);
+            // Add new role
+            var result = await _userManager.AddToRoleAsync(user, newRole.ToString());
 
-                return result.Succeeded;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while updating user role for {UserId}", userId);
-                throw;
-            }
+            // Update user type
+            user.UserType = newRole;
+            await _userManager.UpdateAsync(user);
+
+            return result.Succeeded;
         }
     }
 
