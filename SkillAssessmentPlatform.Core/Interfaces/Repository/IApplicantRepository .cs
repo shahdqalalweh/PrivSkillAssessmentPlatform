@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Core.Interfaces.Repository
 {
-    public interface IApplicantRepository : IRepository<Applicant>
+    public interface IApplicantRepository : IGenericRepository<Applicant>
     {
         Task<Applicant> UpdateStatusAsync(string id, ApplicantStatus status);
         Task<IEnumerable<Enrollment>> GetEnrollmentsAsync(string applicantId);

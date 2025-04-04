@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Core.Interfaces.Repository
 {
-    public interface IExaminerRepository : IRepository<Examiner>
+    public interface IExaminerRepository : IGenericRepository<Examiner>
     {
         Task<Examiner> UpdateSpecializationAsync(string id, string specialization);
         Task<IEnumerable<Track>> GetTracksAsync(string examinerId);

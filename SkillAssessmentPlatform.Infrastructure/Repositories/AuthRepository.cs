@@ -137,8 +137,8 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 _logger.LogWarning("\n\n SendEmailAsync method =====>  " + token);
 
                 // var decodedToken = Uri.UnescapeDataString(token);
-                //string encodedToken = HttpUtility.UrlEncode(token);
-                string encodedToken = Base64UrlEncoder.Encode(token);
+                string encodedToken = HttpUtility.UrlEncode(token);
+                //string encodedToken = Base64UrlEncoder.Encode(token);
 
                 _logger.LogWarning("\n\n ==== AFTER encoding  =====>  " + encodedToken);
 
@@ -289,14 +289,14 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 throw new UserNotFoundException("Invalid email.");
             }
             _logger.LogInformation("\n\n ======> Recived token = "+token);
-            // var decodedToken = WebUtility.UrlDecode(token);
+             var decodedToken = WebUtility.UrlDecode(token);
             //var decodedToken = Uri.UnescapeDataString(token);
-            string decodedToken = Base64UrlEncoder.Decode(token);
+            //string decodedToken = Base64UrlEncoder.Decode(token);
             //var decodedToken = Encoding.UTF8.GetString(Convert.FromBase64String(token));
 
 
             _logger.LogInformation("\n\n ======> Decoded token = " + decodedToken);
-            var resetPassResult = await _userManager.ResetPasswordAsync(user, decodedToken, password);
+            var resetPassResult = await _userManager.ResetPasswordAsync(user, token, password);
                 if (!resetPassResult.Succeeded)
                 {
                     foreach (var error in resetPassResult.Errors)
@@ -338,3 +338,4 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
     }
     }
     }
+

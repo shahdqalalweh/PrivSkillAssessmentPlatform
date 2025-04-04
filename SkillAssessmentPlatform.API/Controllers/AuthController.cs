@@ -267,9 +267,10 @@ namespace SkillAssessmentPlatform.API.Controllers
             {
                 throw new BadRequestException("Email and token are required");
             }
-
+            //{
+            string encodedToken = HttpUtility.UrlEncode(token);
             //string encodedToken = Base64UrlEncoder.Encode(token);
-            return Redirect($"http://localhost:5173/resetpassword?email={email}&token={HttpUtility.UrlEncode(token)}");
+            return Redirect($"http://localhost:5173/resetpassword?email={email}&token={encodedToken}");
         }
 
         [HttpPost("resetpassword")]

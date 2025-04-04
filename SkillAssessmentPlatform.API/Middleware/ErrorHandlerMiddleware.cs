@@ -33,8 +33,7 @@ namespace SkillAssessmentPlatform.API.Middleware
                 var responseModel = new Response<string>
                 {
                     Succeeded = false,
-                    Meta = error.Message,
-                    Message = GetErrorType(error),
+                    Message = error.Message,
                     Errors = new List<string>(),
                     StatusCode = HttpStatusCode.InternalServerError // Default
                 };

@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
 
-    public class ApplicantRepository : Repository<Applicant>,IApplicantRepository
+    public class ApplicantRepository : GenericRepository<Applicant>,IApplicantRepository
     {
         private readonly UserManager<User> _userManager;
         private readonly ILogger<ApplicantRepository> _logger;

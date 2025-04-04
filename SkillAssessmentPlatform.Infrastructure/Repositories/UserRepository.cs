@@ -15,7 +15,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
-    public class UserRepository : Repository<User>, IUserRepository
+    public class UserRepository : GenericRepository<User>, IUserRepository
     {
         private readonly UserManager<User> _userManager;
         private readonly ILogger<UserRepository> _logger;

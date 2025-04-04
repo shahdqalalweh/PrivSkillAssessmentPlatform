@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Core.Interfaces.Repository
 {
-    public interface IUserRepository : IRepository<User>
+    public interface IUserRepository : IGenericRepository<User>
     {
         Task<User> GetUserByEmailAsync(string email);
         Task<IEnumerable<User>> SearchUsersAsync(string searchTerm, Actors userType);

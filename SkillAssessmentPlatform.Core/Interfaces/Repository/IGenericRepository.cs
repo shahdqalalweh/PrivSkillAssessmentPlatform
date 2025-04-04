@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Core.Interfaces.Repository
 {
-    public interface IRepository<T> where T : class
+    public interface IGenericRepository<T> where T : class
     {
         Task<T> GetByIdAsync(string id);
         Task<T> GetByIdAsync(int id);

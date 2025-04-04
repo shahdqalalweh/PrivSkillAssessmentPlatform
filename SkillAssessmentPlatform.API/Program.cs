@@ -48,7 +48,7 @@ namespace SkillAssessmentPlatform.API
                                         options.TokenLifespan = TimeSpan.FromHours(7));
 
             builder.Services.AddLogging();
-            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();

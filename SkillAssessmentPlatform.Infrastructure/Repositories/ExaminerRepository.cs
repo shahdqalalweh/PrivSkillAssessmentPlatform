@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
 
-    public class ExaminerRepository : Repository<Examiner>, IExaminerRepository
+    public class ExaminerRepository : GenericRepository<Examiner>, IExaminerRepository
     {
         private readonly UserManager<User> _userManager;
         private readonly ILogger<ExaminerRepository> _logger;
@@ -147,6 +147,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
 
             return true;
         }
+
     }
    
 }
