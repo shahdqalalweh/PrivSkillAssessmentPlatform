@@ -1,4 +1,5 @@
-﻿using SkillAssessmentPlatform.Core.Interfaces.Repository;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace SkillAssessmentPlatform.Core.Interfaces
     {
         #region repos
         IGenericRepository<T> Repository<T> () where T : class;
+        TRepository GetCustomRepository<TRepository>() where TRepository : class;
         IAuthRepository AuthRepository { get; }
         IUserRepository UserRepository { get; }
         IApplicantRepository ApplicantRepository { get; }
@@ -18,10 +20,10 @@ namespace SkillAssessmentPlatform.Core.Interfaces
         #endregion
 
         #region methods
-        Task BeginTransactionAsync();
-        Task CommitAsync();
-        Task RollbackAsync();
-        Task<int> SaveChangesAsync();
+        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task CommitTransactionAsync();
+        Task RollbackTransactionAsync();
+        Task<int> CompleteAsync();
 
         #endregion
     }

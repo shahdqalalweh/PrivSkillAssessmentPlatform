@@ -18,4 +18,8 @@
     <ProjectReference Include="..\SkillAssessmentPlatform.Application\SkillAssessmentPlatform.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DependencyInjections\" />
+  </ItemGroup>
+
 </Project>

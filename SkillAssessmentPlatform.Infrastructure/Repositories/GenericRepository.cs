@@ -34,6 +34,10 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             return await _dbSet.ToListAsync();
         }
 
+        public virtual async Task<int> GetCount()
+        {
+            return await _dbSet.CountAsync();
+        }
         public virtual async Task<IEnumerable<T>> GetPagedAsync(int page, int pageSize)
         {
             return await _dbSet

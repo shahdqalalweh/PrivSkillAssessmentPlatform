@@ -7,31 +7,27 @@ using SkillAssessmentPlatform.Application.DTOs;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Exceptions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SkillAssessmentPlatform.Infrastructure.Repositories;
 using SkillAssessmentPlatform.Core.Common;
 using SkillAssessmentPlatform.Infrastructure.ExternalServices;
 using SkillAssessmentPlatform.Core.Interfaces.Repository;
+using SkillAssessmentPlatform.Core.Interfaces;
 
 namespace SkillAssessmentPlatform.Application.Services
 {
     public class UserService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly ILogger<UserService> _logger;
 
         public UserService(
-            IUserRepository userRepository,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             IFileService fileService,
             ILogger<UserService> logger)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _fileService = fileService;
             _logger = logger;
@@ -39,13 +35,14 @@ namespace SkillAssessmentPlatform.Application.Services
 
         public async Task<UserDTO> GetProfileAsync(string userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            //var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
             return _mapper.Map<UserDTO>(user);
         }
 
         public async Task<UserDTO> UpdateProfileAsync(string userId, UpdateUserDTO updateUserDto)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
 
             // Update user properties
             user.FullName = updateUserDto.FullName;
@@ -53,7 +50,7 @@ namespace SkillAssessmentPlatform.Application.Services
             user.Gender = updateUserDto.Gender;
 
             // Save changes
-            var updatedUser = await _userRepository.UpdateAsync(user);
+            var updatedUser = await _unitOfWork.UserRepository.UpdateAsync(user);
             return _mapper.Map<UserDTO>(updatedUser);
         }
 
@@ -61,7 +58,7 @@ namespace SkillAssessmentPlatform.Application.Services
 
         public async Task<string> UpdateProfileImageAsync(string userId, IFormFile image)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
 
             if (image == null || image.Length == 0)
                 throw new BadRequestException("No image provided");
@@ -76,7 +73,7 @@ namespace SkillAssessmentPlatform.Application.Services
             var imagePath = await _fileService.UploadFileAsync(image, "profile-images");
             user.Image = imagePath;
 
-            await _userRepository.UpdateAsync(user);
+            await _unitOfWork.UserRepository.UpdateAsync(user);
 
             return imagePath;
         }
@@ -88,13 +85,13 @@ namespace SkillAssessmentPlatform.Application.Services
 
             if (!string.IsNullOrEmpty(userType) && Enum.TryParse<Actors>(userType, out var userTypeEnum))
             {
-                users = await _userRepository.GetUsersByTypeAsync(userTypeEnum, page, pageSize);
-                totalCount = await _userRepository.GetCountByTypeAsync(userTypeEnum);
+                users = await _unitOfWork.UserRepository.GetUsersByTypeAsync(userTypeEnum, page, pageSize);
+                totalCount = await _unitOfWork.UserRepository.GetCountByTypeAsync(userTypeEnum);
             }
             else
             {
-                users = await _userRepository.GetPagedAsync(page, pageSize);
-                totalCount = await _userRepository.GetTotalCountAsync();
+                users = await _unitOfWork.UserRepository.GetPagedAsync(page, pageSize);
+                totalCount = await _unitOfWork.UserRepository.GetTotalCountAsync();
             }
             var userDtos = _mapper.Map<IEnumerable<UserDTO>>(users);
             return new PagedResponse<UserDTO>(
@@ -109,38 +106,38 @@ namespace SkillAssessmentPlatform.Application.Services
 
         public async Task<UserDTO> GetUserByIdAsync(string id)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(id);
             return _mapper.Map<UserDTO>(user);
         }
-/*
-        public async Task<PagedResponse<UserDTO>> SearchUsersAsync(string searchTerm, string userType = null, int page = 1, int pageSize = 10)
-        {
-            IEnumerable<User> users;
-            int totalCount;
+        /*
+                public async Task<PagedResponse<UserDTO>> SearchUsersAsync(string searchTerm, string userType = null, int page = 1, int pageSize = 10)
+                {
+                    IEnumerable<User> users;
+                    int totalCount;
 
-            if (!string.IsNullOrEmpty(userType) && Enum.TryParse<Actors>(userType, out var userTypeEnum))
-            {
-                users = await _userRepository.SearchUsersByTypeAsync(searchTerm, userTypeEnum, page, pageSize);
-                totalCount = await _userRepository.CountSearchByTypeAsync(searchTerm, userTypeEnum);
-            }
-            else
-            {
-                users = await _userRepository.SearchUsersAsync(searchTerm, page, pageSize);
-                totalCount = await _userRepository.CountSearchAsync(searchTerm);
-            }
+                    if (!string.IsNullOrEmpty(userType) && Enum.TryParse<Actors>(userType, out var userTypeEnum))
+                    {
+                        users = await _unitOfWork.UserRepository.SearchUsersByTypeAsync(searchTerm, userTypeEnum, page, pageSize);
+                        totalCount = await _unitOfWork.UserRepository.CountSearchByTypeAsync(searchTerm, userTypeEnum);
+                    }
+                    else
+                    {
+                        users = await _unitOfWork.UserRepository.SearchUsersAsync(searchTerm, page, pageSize);
+                        totalCount = await _unitOfWork.UserRepository.CountSearchAsync(searchTerm);
+                    }
 
-            return new PagedResponse<UserDTO>(
-                _mapper.Map<List<UserDTO>>(users),
-                page,
-                pageSize,
-                totalCount
-            );
-        }
-        */
+                    return new PagedResponse<UserDTO>(
+                        _mapper.Map<List<UserDTO>>(users),
+                        page,
+                        pageSize,
+                        totalCount
+                    );
+                }
+                */
 
         public async Task<bool> DeleteUserAsync(string id)
         {
-            await _userRepository.DeleteAsync(id);
+            await _unitOfWork.UserRepository.DeleteAsync(id);
             return true;
         }
     }

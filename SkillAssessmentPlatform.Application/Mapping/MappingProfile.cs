@@ -21,6 +21,8 @@ namespace SkillAssessmentPlatform.Application.Mapping
                     .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
            
             CreateMap<UserDTO, User>().ReverseMap();
+            CreateMap<Examiner,ExaminerDTO>().ReverseMap();
+            CreateMap<Applicant,ApplicantDTO>().ReverseMap();
             // Examiner
             //   CreateMap<AuthDTO, Examiner>();
 

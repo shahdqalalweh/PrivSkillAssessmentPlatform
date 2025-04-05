@@ -1,70 +1,92 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SkillAssessmentPlatform.API.Common;
+using SkillAssessmentPlatform.Application.DTOs;
 using SkillAssessmentPlatform.Application.Services;
 using SkillAssessmentPlatform.Core.Entities.Users;
 
 namespace SkillAssessmentPlatform.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    public class ApplicantController : ControllerBase
+    [Route("api/[controller]")]
+    public class ApplicantsController : ControllerBase
     {
-       // private readonly ApplicantService _applicantService;
+        private readonly ApplicantService _applicantService;
+        private readonly IResponseHandler _responseHandler;
 
-     ///   public ApplicantController(ApplicantService applicantService)
-     //   {
-       //     _applicantService = applicantService;
-      //  }
+        public ApplicantsController(
+            ApplicantService applicantService,
+            IResponseHandler responseHandler)
+        {
+            _applicantService = applicantService;
+            _responseHandler = responseHandler;
+        }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetAllApplicants()
-        //{
-        //    var applicants = await _applicantService.GetAllApplicantsAsync();
-        //    return Ok(applicants);
-        //}
+        [HttpGet]
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _applicantService.GetAllApplicantsAsync(page, pageSize);
+            return _responseHandler.Success(result);
+        }
 
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetApplicantById(string id)
-        //{
-        //    var applicant = await _applicantService.GetApplicantByIdAsync(id);
-        //    if (applicant == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(applicant);
-        //}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var applicant = await _applicantService.GetApplicantByIdAsync(id);
+            return _responseHandler.Success(applicant);
+        }
 
-        //[HttpPost]
-        //public async Task<IActionResult> CreateApplicant(Applicant applicant)
-        //{
-        //    await _applicantService.CreateApplicantAsync(applicant);
-        //    return CreatedAtAction(nameof(GetApplicantById), new { id = applicant.Id }, applicant);
-        //}
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(
+            string id,
+            [FromBody] UpdateStatusDTO updateStatusDto)
+        {
+            var updatedApplicant = await _applicantService.UpdateApplicantStatusAsync(id, updateStatusDto);
+            return _responseHandler.Success(updatedApplicant, "Applicant status updated");
+        }
+        /*
+        [HttpGet("{applicantId}/enrollments")]
+        public async Task<IActionResult> GetEnrollments(
+            string applicantId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _applicantService.GetApplicantEnrollmentsAsync(applicantId, page, pageSize);
+            return _responseHandler.Success(result);
+        }
 
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateApplicant(string id, Applicant applicant)
-        //{
-        //    if (id != applicant.Id)
-        //    {
-        //        return BadRequest();
-        //    }
+        [HttpGet("{applicantId}/certificates")]
+        public async Task<IActionResult> GetCertificates(
+            string applicantId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _applicantService.GetApplicantCertificatesAsync(applicantId, page, pageSize);
+            return _responseHandler.Success(result);
+        }
 
-        //    await _applicantService.UpdateApplicantAsync(applicant);
-        //    return NoContent();
-        //}
+        [HttpPost("{applicantId}/enrollments")]
+        public async Task<IActionResult> EnrollInTrack(
+            string applicantId,
+            [FromBody] EnrollmentCreateDTO enrollmentDto)
+        {
+            var enrollment = await _applicantService.EnrollApplicantInTrackAsync(applicantId, enrollmentDto);
+            return _responseHandler.Created(enrollment, "Enrollment created successfully");
+        }
 
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteApplicant(string id)
-        //{
-        //    await _applicantService.DeleteApplicantAsync(id);
-        //    return NoContent();
-        //}
-
-        //[HttpPost("{applicantId}/enroll/{trackId}")]
-        //public async Task<IActionResult> EnrollApplicantInTrack(string applicantId, int trackId)
-        //{
-        //    await _applicantService.EnrollApplicantInTrackAsync(applicantId, trackId);
-        //    return Ok();
-        //}
+        [HttpGet("{applicantId}/progress")]
+        public async Task<IActionResult> GetProgress(
+            string applicantId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _applicantService.GetApplicantProgressAsync(applicantId, page, pageSize);
+            return _responseHandler.Success(result);
+        }
+        */
+        
     }
+
 }

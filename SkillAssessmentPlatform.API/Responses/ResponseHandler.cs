@@ -11,19 +11,26 @@ namespace SkillAssessmentPlatform.API.Bases
    
       public class ResponseHandler : IResponseHandler
       {
-          public IActionResult Success<T>(T entity, string message = "Success", object meta = null)
-          {
-              return new OkObjectResult(new Response<T>(entity, message, HttpStatusCode.OK) { Meta = meta });
-          }
+        public IActionResult Success<T>(T entity, string message = "Success", object meta = null)
+        {
+            var response = new Response<T>(entity, message, HttpStatusCode.OK) { Meta = meta };
+            return new JsonResult(response)
+            {
+                StatusCode = StatusCodes.Status200OK,
+                ContentType = "application/json"
+            };
+        }
         public IActionResult Success(string message = "Success", object meta = null)
         {
             return new OkObjectResult(new Response<string>(message, HttpStatusCode.OK) { Meta = meta });
         }
         public IActionResult Created<T>(T entity, string message = "Created Successfully", object meta = null)
           {
-              return new ObjectResult(new Response<T>(entity, message, HttpStatusCode.Created) { Meta = meta })
-              {
-                  StatusCode = (int)HttpStatusCode.Created
+            var response = new Response<T>(entity, message, HttpStatusCode.Created) { Meta = meta };
+              return new JsonResult(response){
+                  StatusCode = (int)HttpStatusCode.Created,
+                  ContentType = "application/json" 
+
               };
           }
           public IActionResult Deleted()

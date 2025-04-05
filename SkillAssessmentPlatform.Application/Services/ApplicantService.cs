@@ -5,6 +5,7 @@ using SkillAssessmentPlatform.Core.Entities;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Interfaces;
 using SkillAssessmentPlatform.Core.Interfaces.Repository;
+using SkillAssessmentPlatform.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,34 +13,28 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Application.Services
-{/*
-    public class ApplicantService 
+{
+    public class ApplicantService
     {
-        private readonly IApplicantRepository _applicantRepository;
-        //private readonly IEnrollmentRepository _enrollmentRepository;
-        //private readonly ICertificateRepository _certificateRepository;
-        //private readonly ITrackRepository _trackRepository;
+        private readonly IUnitOfWork _unitOfWork;
+       
         private readonly IMapper _mapper;
 
         public ApplicantService(
-            IApplicantRepository applicantRepository,
-            //IEnrollmentRepository enrollmentRepository,
-            //ICertificateRepository certificateRepository,
-            //ITrackRepository trackRepository,
+            IUnitOfWork unitOfWork,
             IMapper mapper)
         {
-            _applicantRepository = applicantRepository;
-            //_enrollmentRepository = enrollmentRepository;
-            //_certificateRepository = certificateRepository;
-            //_trackRepository = trackRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<PagedResponse<ApplicantDTO>> GetAllApplicantsAsync(int page = 1, int pageSize = 10)
         {
-            var applicants = await _applicantRepository.GetPagedAsync(page, pageSize);
-            var totalCount = applicants.Count();
+            //var applicants = await _applicantRepository.GetPagedAsync(page, pageSize);
+            //var totalCount = await _applicantRepository.CountAsync();
 
+            var applicants = await _unitOfWork.ApplicantRepository.GetPagedAsync(page, pageSize);
+            var totalCount = await _unitOfWork.ApplicantRepository.GetCount();
             return new PagedResponse<ApplicantDTO>(
                 _mapper.Map<List<ApplicantDTO>>(applicants),
                 page,
@@ -50,19 +45,19 @@ namespace SkillAssessmentPlatform.Application.Services
 
         public async Task<ApplicantDTO> GetApplicantByIdAsync(string id)
         {
-            var applicant = await _applicantRepository.GetByIdAsync(id);
+            var applicant = await _unitOfWork.ApplicantRepository.GetByIdAsync(id);
             return _mapper.Map<ApplicantDTO>(applicant);
         }
 
-        //public async Task<ApplicantDTO> UpdateApplicantStatusAsync(string id, UpdateStatusDTO updateStatusDto)
-        //{
-        //    var applicant = await _applicantRepository.GetByIdAsync(id);
-        //    applicant.Status = updateStatusDto.Status;
+        public async Task<ApplicantDTO> UpdateApplicantStatusAsync(string id, UpdateStatusDTO updateStatusDto)
+        {
+            var applicant = await _unitOfWork.ApplicantRepository.GetByIdAsync(id);
+            applicant.Status = updateStatusDto.Status;
 
-        //    var updatedApplicant = await _applicantRepository.UpdateAsync(applicant);
-        //    return _mapper.Map<ApplicantDTO>(updatedApplicant);
-        //}
-
+            var updatedApplicant = await _unitOfWork.ApplicantRepository.UpdateAsync(applicant);
+            return _mapper.Map<ApplicantDTO>(updatedApplicant);
+        }
+        /*
         public async Task<PagedResponse<EnrollmentDTO>> GetApplicantEnrollmentsAsync(string applicantId, int page = 1, int pageSize = 10)
         {
             var enrollments = await _enrollmentRepository.GetByApplicantIdAsync(applicantId, page, pageSize);
@@ -88,7 +83,7 @@ namespace SkillAssessmentPlatform.Application.Services
                 totalCount
             );
         }
-
+        
         public async Task<EnrollmentDTO> EnrollApplicantInTrackAsync(string applicantId, EnrollmentCreateDTO enrollmentDto)
         {
             var track = await _trackRepository.GetByIdAsync(enrollmentDto.TrackId);
@@ -118,6 +113,7 @@ namespace SkillAssessmentPlatform.Application.Services
                 totalCount
             );
         }
-    }*/
+        */
+    }
 
 }

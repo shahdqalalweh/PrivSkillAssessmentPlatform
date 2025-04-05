@@ -13,6 +13,7 @@ using SkillAssessmentPlatform.Application.Mapping;
 using SkillAssessmentPlatform.Application.Services;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Enums;
+using SkillAssessmentPlatform.Core.Interfaces;
 using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
 using SkillAssessmentPlatform.Infrastructure.ExternalServices;
@@ -48,15 +49,29 @@ namespace SkillAssessmentPlatform.API
                                         options.TokenLifespan = TimeSpan.FromHours(7));
 
             builder.Services.AddLogging();
+            builder.Services.AddScoped<IResponseHandler, ResponseHandler>();
+
+
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
             builder.Services.AddScoped<IExaminerRepository, ExaminerRepository>();
+
+
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
-            builder.Services.AddScoped<IResponseHandler, ResponseHandler>();
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<ApplicantService>();
+            builder.Services.AddScoped<ExaminerService>();
+            builder.Services.AddScoped<UserService>();
+
+
+
             builder.Services.AddSingleton<IFileService, FileService>();
 
             builder.Services.AddAutoMapper(typeof(MappingProfile));

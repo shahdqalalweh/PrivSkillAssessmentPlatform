@@ -8,6 +8,7 @@ using SkillAssessmentPlatform.Application.DTOs.Auth;
 using SkillAssessmentPlatform.Core.Common;
 using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Exceptions;
+using SkillAssessmentPlatform.Core.Interfaces;
 using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.ExternalServices;
 using SkillAssessmentPlatform.Infrastructure.Repositories;
@@ -25,19 +26,21 @@ namespace SkillAssessmentPlatform.Application.Services
 {
     public class AuthService
     {
-        private readonly IAuthRepository _authRepository;
+        //private readonly IAuthRepository _authRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<AuthService> _logger;
         private readonly TokenService _tokenService;
         private readonly EmailServices _emailService;
 
-        public AuthService(IAuthRepository authRepository,
+        public AuthService(
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<AuthService> logger,
             TokenService tokenService,
             EmailServices emailService)
         {
-            _authRepository = authRepository;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _tokenService = tokenService;
@@ -52,7 +55,7 @@ namespace SkillAssessmentPlatform.Application.Services
             }
 
             var user = _mapper.Map<User>(dto);
-            return await _authRepository.RegisterApplicantAsync(user, dto.Password);
+            return await _unitOfWork.AuthRepository.RegisterApplicantAsync(user, dto.Password);
         }
 
         public async Task<string> RegisterExaminerAsync(UserRegisterDTO dto)
@@ -63,12 +66,12 @@ namespace SkillAssessmentPlatform.Application.Services
             }
 
             var user = _mapper.Map<User>(dto);
-            return await _authRepository.RegisterExaminerAsync(user, dto.Password);
+            return await _unitOfWork.AuthRepository.RegisterExaminerAsync(user, dto.Password);
         }
         public async Task EmailConfirmationAsync(string email, string token)
         {
 
-            await _authRepository.EmailConfirmation(email, token);
+            await _unitOfWork.AuthRepository.EmailConfirmation(email, token);
         }
         /*
          * old login
@@ -97,26 +100,30 @@ namespace SkillAssessmentPlatform.Application.Services
         */
         public async Task<string> LogInAsync(LoginDTO loginDTO)
         {
-            var user = await _authRepository.LogInAsync(loginDTO.Email, loginDTO.Password);
+            var user = await _unitOfWork.AuthRepository.LogInAsync(loginDTO.Email, loginDTO.Password);
             return _tokenService.GenerateToken(user);
         }
 
         public async Task ForgotPasswordAsync(string email)
         {
-            await _authRepository.ForgotPasswordAsync(email);
+            await _unitOfWork.AuthRepository.ForgotPasswordAsync(email);
         }
         public async Task ResetPasswordAsync(ResetPasswordDTO dto)
         {
-            await _authRepository.ResetPassword(dto.Email, dto.Password, dto.Token);
+            if (string.IsNullOrWhiteSpace(dto.Token))
+{
+                throw new ArgumentException("Token is required");
+            }
+            await _unitOfWork.AuthRepository.ResetPassword(dto.Email, dto.Password, dto.Token);
         }
         public async Task ChangePasswordAsync(ChangePasswordDTO dto)
         {
-            await _authRepository.ChangePasswordAsync(dto.Email, dto.OldPassword, dto.NewPassword);
+            await _unitOfWork.AuthRepository.ChangePasswordAsync(dto.Email, dto.OldPassword, dto.NewPassword);
         }
 
         public async Task UpdateUserEmailAsync(string userId, string newEmail)
         {
-            await _authRepository.UpdateUserEmail(userId, newEmail);
+            await _unitOfWork.AuthRepository.UpdateUserEmail(userId, newEmail);
         }
     }
 }

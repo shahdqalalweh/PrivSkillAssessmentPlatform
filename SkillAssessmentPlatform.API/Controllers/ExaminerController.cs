@@ -1,71 +1,87 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SkillAssessmentPlatform.API.Common;
+using SkillAssessmentPlatform.Application.DTOs;
 using SkillAssessmentPlatform.Application.Services;
 using SkillAssessmentPlatform.Core.Entities.Users;
 
 namespace SkillAssessmentPlatform.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-
-    public class ExaminerController : ControllerBase
+    [Route("api/[controller]")]
+    public class ExaminersController : ControllerBase
     {
-     /*   private readonly ExaminerService _examinerService;
+        private readonly ExaminerService _examinerService;
+        private readonly IResponseHandler _responseHandler;
 
-        public ExaminerController(ExaminerService examinerService)
+        public ExaminersController(
+            ExaminerService examinerService,
+            IResponseHandler responseHandler)
         {
             _examinerService = examinerService;
+            _responseHandler = responseHandler;
         }
-*/
-        //[HttpGet]
-        //public async Task<IActionResult> GetAllExaminers()
-        //{
-        //    var examiners = await _examinerService.GetAllExaminersAsync();
-        //    return Ok(examiners);
-        //}
 
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetExaminerById(string id)
-        //{
-        //    var examiner = await _examinerService.GetExaminerByIdAsync(id);
-        //    if (examiner == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(examiner);
-        //}
+        [HttpGet]
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _examinerService.GetAllExaminersAsync(page, pageSize);
+            return _responseHandler.Success(result);
+        }
 
-        //[HttpPost]
-        //public async Task<IActionResult> CreateExaminer(Examiner examiner)
-        //{
-        //    await _examinerService.CreateExaminerAsync(examiner);
-        //    return CreatedAtAction(nameof(GetExaminerById), new { id = examiner.Id }, examiner);
-        //}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var examiner = await _examinerService.GetExaminerByIdAsync(id);
+            return _responseHandler.Success(examiner);
+        }
 
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateExaminer(string id, Examiner examiner)
-        //{
-        //    if (id != examiner.Id)
-        //    {
-        //        return BadRequest();
-        //    }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateExaminer(
+            string id,
+            [FromBody] UpdateExaminerDTO examinerDto)
+        {
+            var updatedExaminer = await _examinerService.UpdateExaminerAsync(id, examinerDto);
+            return _responseHandler.Success(updatedExaminer, "Examiner updated successfully");
+        }
+        /*
+        [HttpGet("{examinerId}/tracks")]
+        public async Task<IActionResult> GetTracks(
+            string examinerId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var result = await _examinerService.GetExaminerTracksAsync(examinerId, page, pageSize);
+            return _responseHandler.Success(result);
+        }
 
-        //    await _examinerService.UpdateExaminerAsync(examiner);
-        //    return NoContent();
-        //}
+        [HttpPost("{examinerId}/tracks")]
+        public async Task<IActionResult> AddTrack(
+            string examinerId,
+            [FromBody] AddTrackDTO trackDto)
+        {
+            await _examinerService.AddTrackToExaminerAsync(examinerId, trackDto);
+            return _responseHandler.Success(null, "Track added to examiner");
+        }
 
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteExaminer(string id)
-        //{
-        //    await _examinerService.DeleteExaminerAsync(id);
-        //    return NoContent();
-        //}
-
-        //[HttpGet("track/{trackId}")]
-        //public async Task<IActionResult> GetExaminersByTrack(int trackId)
-        //{
-        //    var examiners = await _examinerService.GetExaminersByTrackAsync(trackId);
-        //    return Ok(examiners);
-        //}
+        [HttpGet("{examinerId}/workload")]
+        public async Task<IActionResult> GetWorkload(string examinerId)
+        {
+            var workload = await _examinerService.GetExaminerWorkloadAsync(examinerId);
+            return _responseHandler.Success(workload);
+        }
+        */
+        [HttpDelete("{examinerId}/tracks/{trackId}")]
+        public async Task<IActionResult> RemoveTrack(
+            string examinerId,
+            int trackId)
+        {
+            await _examinerService.RemoveTrackFromExaminerAsync(examinerId, trackId);
+            return _responseHandler.Success(null, "Track removed from examiner");
+        }
     }
+
+
 }

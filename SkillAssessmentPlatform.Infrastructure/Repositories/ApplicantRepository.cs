@@ -31,6 +31,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             _logger = logger;
         }
 
+        // اضطرينا نعمل افررايد لأن الابلكنت موجود في يوزر وفي ابلكنت
         public override async Task<IEnumerable<Applicant>> GetAllAsync()
         {
             return await _context.Users
@@ -46,7 +47,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 .Take(pageSize)
                 .ToListAsync();
         }
-
+     
         public override async Task<Applicant> GetByIdAsync(string id)
         {
             var applicant = await _context.Users

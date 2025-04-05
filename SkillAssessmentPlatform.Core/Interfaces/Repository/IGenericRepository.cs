@@ -10,7 +10,7 @@ namespace SkillAssessmentPlatform.Core.Interfaces.Repository
     {
         Task<T> GetByIdAsync(string id);
         Task<T> GetByIdAsync(int id);
-
+        Task<int> GetCount();
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> GetPagedAsync(int page, int pageSize);
         Task<T> UpdateAsync(T entity);
