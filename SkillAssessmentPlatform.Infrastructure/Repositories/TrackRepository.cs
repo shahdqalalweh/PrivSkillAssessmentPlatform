@@ -1,58 +1,91 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SkillAssessmentPlatform.Core.Entities;
+using SkillAssessmentPlatform.Core.Entities.Users;
 using SkillAssessmentPlatform.Core.Interfaces;
 using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
-    public class TrackRepository : ITrackRepository
+    public class TrackRepository : GenericRepository<Track>, ITrackRepository
     {
-        private readonly AppDbContext _context;
+        //private readonly AppDbContext _context;
 
-        public TrackRepository(AppDbContext context)
+        public TrackRepository(AppDbContext context) : base(context)
         {
-            _context = context;
         }
 
+        #region IGenericRepository<Track> Members
+
+      /*  public async Task<Track> GetByIdAsync(int id)
+        {
+            return await _context.Tracks
+                .Include(t => t.Levels)
+                .FirstOrDefaultAsync(t => t.Id == id);
+        }
+      */
+        // لاستخدام GetByIdAsync(string id) نرفع استثناء أو نتركه غير مدعوم لأن المفتاح int
+      /*  public Task<Track> GetByIdAsync(string id)
+        {
+            throw new NotSupportedException("Track primary key is of type int.");
+        }
+      */
+      /*
         public async Task<IEnumerable<Track>> GetAllAsync()
         {
             return await _context.Tracks
                 .Include(t => t.Levels)
                 .ToListAsync();
         }
-
-        public async Task<Track> GetByIdAsync(int id)
+        /*
+        public async Task<int> GetCount()
+        {
+            return await _context.Tracks.CountAsync();
+        }*//*
+        // important
+        public async Task<IEnumerable<Track>> GetPagedAsync(int page, int pageSize)
         {
             return await _context.Tracks
-                .Include(t => t.Levels)
-                .FirstOrDefaultAsync(t => t.Id == id);
+                .OrderBy(t => t.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
-        public async Task AddAsync(Track track)
+        public async Task<Track> UpdateAsync(Track entity)
         {
-            await _context.Tracks.AddAsync(track);
+            _context.Tracks.Update(entity);
             await _context.SaveChangesAsync();
+            return entity;
         }
 
-        public async Task UpdateAsync(Track track)
-        {
-            _context.Tracks.Update(track);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var track = await GetByIdAsync(id);
-            if (track != null)
-            {
-                _context.Tracks.Remove(track);
-                await _context.SaveChangesAsync();
-            }
+            if (track == null)
+                return false;
+            _context.Tracks.Remove(track);
+            await _context.SaveChangesAsync();
+            return true;
         }
+
+        public Task<bool> DeleteAsync(string id)
+        {
+            throw new NotSupportedException("Track primary key is of type int.");
+        }
+
+        public async Task<int> GetTotalCountAsync()
+        {
+            return await _context.Tracks.CountAsync();
+        }
+        */
+        #endregion
+
+        #region ITrackRepository Members
 
         public async Task<IEnumerable<Level>> GetLevelsByTrackIdAsync(int trackId)
         {
@@ -68,21 +101,31 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task AssignExaminerAsync(int trackId, string examinerId)
+        /*
+        // Update from Examiner to seniorExaminer
+        public async Task AssignSeniorExaminerAsync(int trackId, string examinerId)
         {
-            // يتم الحصول على Track مع مجموعة Examiners
+            // نفترض أن العلاقة بين Track والـ Examiner مُدارة عبر الخاصية Examiners في Track.
             var track = await _context.Tracks
                 .Include(t => t.Examiners)
                 .FirstOrDefaultAsync(t => t.Id == trackId);
             if (track != null)
             {
-                // هنا عليك تنفيذ منطق إضافة الممتحن إلى مجموعة Examiners
-                // مثال: إذا كانت العلاقة عبر جدول وسيط أو مباشرة، قم بتعديل الكود وفقًا لذلك.
-                // track.Examiners.Add(new Examiner { Id = examinerId });
-                await _context.SaveChangesAsync();
+                // إذا كانت العلاقة مباشرةً، فقم بالتحقق إذا كان الممتحن موجودًا بالفعل في القائمة
+                // مثال توضيحي: (يجب تعديل هذا الجزء حسب تصميم العلاقة الفعلي)
+                if (!track.Examiners.Any(e => e.Id == examinerId))
+                {
+                    // نفترض إنشاء كائن Examiner مؤقت بالمعرف فقط؛
+                    // يُفضل جلب الكائن الكامل من مصدر آخر إذا كان ذلك مطلوبًا.
+                    var examiner = new Examiner { Id = examinerId };
+                    track.Examiners.Add(examiner);
+                    await _context.SaveChangesAsync();
+                }
             }
         }
-
+        */
+        /*
+        //موجودة في اند بوينت ثانية
         public async Task RemoveExaminerAsync(int trackId, string examinerId)
         {
             var track = await _context.Tracks
@@ -90,14 +133,43 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
                 .FirstOrDefaultAsync(t => t.Id == trackId);
             if (track != null)
             {
-                // مثال: العثور على الممتحن وإزالته من المجموعة
-                // var examiner = track.Examiners.FirstOrDefault(e => e.Id == examinerId);
-                // if (examiner != null)
-                // {
-                //     track.Examiners.Remove(examiner);
-                // }
-                await _context.SaveChangesAsync();
+                // البحث عن الممتحن في القائمة وإزالته
+                var examiner = track.Examiners.FirstOrDefault(e => e.Id == examinerId);
+                if (examiner != null)
+                {
+                    track.Examiners.Remove(examiner);
+                    await _context.SaveChangesAsync();
+                }
             }
         }
+        */
+
+        public async Task AddAsync(Track track)
+        {
+           await _context.Tracks.AddAsync(track);
+            _context.SaveChanges();
+        }
+
+        Task ITrackRepository.UpdateAsync(Track track)
+        {
+            return UpdateAsync(track);
+        }
+
+        Task ITrackRepository.DeleteAsync(int id)
+        {
+            return DeleteAsync(id);
+        }
+
+        public Task AssignExaminerAsync(int trackId, string examinerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemoveExaminerAsync(int trackId, string examinerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

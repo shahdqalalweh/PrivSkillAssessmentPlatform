@@ -9,15 +9,18 @@ using SkillAssessmentPlatform.Application.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SkillAssessmentPlatform.Core.Interfaces.Repository;
+using SkillAssessmentPlatform.Infrastructure.Data;
 namespace SkillAssessmentPlatform.Application.Services
 {
     public class TrackService
     {
         private readonly ITrackRepository _trackRepository;
+        private readonly AppDbContext appDbContext;
 
-        public TrackService(ITrackRepository trackRepository)
+        public TrackService(ITrackRepository trackRepository, AppDbContext appDbContext)
         {
             _trackRepository = trackRepository;
+            this.appDbContext = appDbContext;
         }
 
         // استرجاع جميع المسارات وتحويلها إلى DTO
@@ -61,15 +64,18 @@ namespace SkillAssessmentPlatform.Application.Services
             var track = new Track
             {
                 // Id يتم توليده من قاعدة البيانات
+              //  Id = trackDto.Id,
                 SeniorExaminerID = trackDto.SeniorExaminerID,
                 Name = trackDto.Name,
                 Description = trackDto.Description,
                 Objectives = trackDto.Objectives,
                 AssociatedSkills = trackDto.AssociatedSkills,
                 IsActive = trackDto.IsActive,
+                
                 Image = trackDto.Image,
                 CreatedAt = System.DateTime.UtcNow
             };
+            ///>> assign role to senior examiner via examiner repo 
             await _trackRepository.AddAsync(track);
             trackDto.Id = track.Id;
             return trackDto;
@@ -104,15 +110,20 @@ namespace SkillAssessmentPlatform.Application.Services
         public async Task<IEnumerable<LevelDto>> GetLevelsByTrackIdAsync(int trackId)
         {
             var levels = await _trackRepository.GetLevelsByTrackIdAsync(trackId);
-            return levels.Select(l => new LevelDto
+           
+            var data =  levels.Select(l => new LevelDto
             {
                 Id = l.Id,
+                StageName = appDbContext.Stages.FirstOrDefault(x => x.LevelId == l.Id)?.Name??"Not found",
                 TrackId = l.TrackId,
                 Name = l.Name,
                 Description = l.Description,
                 Order = l.Order,
                 IsActive = l.IsActive
-            });
+            }).ToList();
+
+            return data;
+
         }
 
         // إنشاء مستوى جديد داخل مسار

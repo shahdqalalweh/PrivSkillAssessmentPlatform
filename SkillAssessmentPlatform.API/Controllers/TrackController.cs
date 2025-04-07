@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SkillAssessmentPlatform.API.Common;
 using SkillAssessmentPlatform.Application.DTOs;
 using SkillAssessmentPlatform.Application.Services;
 using System.Collections.Generic;
@@ -11,10 +13,14 @@ namespace SkillAssessmentPlatform.API.Controllers
     public class TrackApiController : ControllerBase
     {
         private readonly TrackService _trackService;
+        private readonly ExaminerService _examinerService;
+        private readonly IResponseHandler _responseHandler;
 
-        public TrackApiController(TrackService trackService)
+        public TrackApiController(TrackService trackService, ExaminerService examinerService, IResponseHandler responseHandler)
         {
             _trackService = trackService;
+            _examinerService = examinerService;
+            _responseHandler = responseHandler;
         }
 
         // GET: api/TrackApi
@@ -22,7 +28,7 @@ namespace SkillAssessmentPlatform.API.Controllers
         public async Task<ActionResult<IEnumerable<TrackDto>>> GetTracks()
         {
             var tracks = await _trackService.GetAllTracksAsync();
-            return Ok(tracks);
+            return tracks.ToList();
         }
 
         // GET: api/TrackApi/5
@@ -49,12 +55,15 @@ namespace SkillAssessmentPlatform.API.Controllers
             return NoContent();
         }
 
+
         // POST: api/TrackApi
         [HttpPost]
-        public async Task<ActionResult<TrackDto>> PostTrack([FromBody] TrackDto trackDto)
+       // [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> PostTrack([FromBody] TrackDto trackDto)
         {
             var createdTrack = await _trackService.CreateTrackAsync(trackDto);
-            return CreatedAtAction(nameof(GetTrack), new { id = createdTrack.Id }, createdTrack);
+            return _responseHandler.Created(createdTrack);
+            //return CreatedAtAction(nameof(GetTrack), new { id = createdTrack.Id }, createdTrack);
         }
 
         // DELETE: api/TrackApi/5
@@ -92,15 +101,6 @@ namespace SkillAssessmentPlatform.API.Controllers
                 return BadRequest();
             return Ok();
         }
-
-        // DELETE: api/TrackApi/{id}/examiners/{examinerId}
-        [HttpDelete("{id}/examiners/{examinerId}")]
-        public async Task<IActionResult> RemoveExaminer(int id, string examinerId)
-        {
-            var result = await _trackService.RemoveExaminerAsync(id, examinerId);
-            if (!result)
-                return NotFound();
-            return NoContent();
-        }
     }
 }
+       
