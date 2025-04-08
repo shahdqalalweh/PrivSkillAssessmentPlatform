@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SkillAssessmentPlatform.API.Common;
 using SkillAssessmentPlatform.Application.DTOs;
 using SkillAssessmentPlatform.Application.Services;
+using SkillAssessmentPlatform.Core.Exceptions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,13 +11,13 @@ namespace SkillAssessmentPlatform.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TrackApiController : ControllerBase
+    public class TracksController : ControllerBase
     {
         private readonly TrackService _trackService;
         private readonly ExaminerService _examinerService;
         private readonly IResponseHandler _responseHandler;
 
-        public TrackApiController(TrackService trackService, ExaminerService examinerService, IResponseHandler responseHandler)
+        public TracksController(TrackService trackService, ExaminerService examinerService, IResponseHandler responseHandler)
         {
             _trackService = trackService;
             _examinerService = examinerService;
@@ -25,10 +26,10 @@ namespace SkillAssessmentPlatform.API.Controllers
 
         // GET: api/TrackApi
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TrackDto>>> GetTracks()
+        public async Task<IActionResult> GetTracks()
         {
             var tracks = await _trackService.GetAllTracksAsync();
-            return tracks.ToList();
+            return _responseHandler.Success(tracks);
         }
 
         // GET: api/TrackApi/5
@@ -46,13 +47,14 @@ namespace SkillAssessmentPlatform.API.Controllers
         public async Task<IActionResult> PutTrack(int id, [FromBody] TrackDto trackDto)
         {
             if (id != trackDto.Id)
-                return BadRequest();
+                // return _responseHandler.BadRequest("bad request");
+                throw new BadRequestException("IDes do not match");
 
             var success = await _trackService.UpdateTrackAsync(id, trackDto);
             if (!success)
-                return NotFound();
+                throw new KeyNotFoundException();
 
-            return NoContent();
+            return _responseHandler.Success<string>("upadated");
         }
 
 
@@ -73,7 +75,7 @@ namespace SkillAssessmentPlatform.API.Controllers
             var success = await _trackService.DeleteTrackAsync(id);
             if (!success)
                 return NotFound();
-            return NoContent();
+            return _responseHandler.Success();
         }
 
         // GET: api/TrackApi/5/levels

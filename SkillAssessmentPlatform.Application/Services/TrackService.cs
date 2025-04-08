@@ -86,6 +86,7 @@ namespace SkillAssessmentPlatform.Application.Services
         {
             var track = await _trackRepository.GetByIdAsync(id);
             if (track == null) return false;
+
             track.SeniorExaminerID = trackDto.SeniorExaminerID;
             track.Name = trackDto.Name;
             track.Description = trackDto.Description;
@@ -93,6 +94,7 @@ namespace SkillAssessmentPlatform.Application.Services
             track.AssociatedSkills = trackDto.AssociatedSkills;
             track.IsActive = trackDto.IsActive;
             track.Image = trackDto.Image;
+
             await _trackRepository.UpdateAsync(track);
             return true;
         }
