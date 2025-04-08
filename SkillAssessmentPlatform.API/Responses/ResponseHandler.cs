@@ -4,6 +4,7 @@
     using SkillAssessmentPlatform.Core.Common;
     using System.Collections.Generic;
     using System.Net;
+using System.Text.Unicode;
 
 namespace SkillAssessmentPlatform.API.Bases
 {
@@ -18,6 +19,7 @@ namespace SkillAssessmentPlatform.API.Bases
             {
                 StatusCode = StatusCodes.Status200OK,
                 ContentType = "application/json"
+           
             };
         }
         public IActionResult Success(string message = "Success", object meta = null)

@@ -13,7 +13,7 @@ namespace SkillAssessmentPlatform.Core.Entities.Users
         public string Specialization {  get; set; }
 
         // Navigation properties
-        public User User { get; set; }
+        //public User User { get; set; }
         public ICollection<ExaminerLoad> ExaminerLoads { get; set; }
         public ICollection<Track> ManagedTracks { get; set; }
         public ICollection<Track> WorkingTracks { get; set; }
