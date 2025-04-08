@@ -61,6 +61,8 @@ namespace SkillAssessmentPlatform.API
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
             builder.Services.AddScoped<IExaminerRepository, ExaminerRepository>();
+            builder.Services.AddScoped<TrackService>();
+            builder.Services.AddScoped<ITrackRepository, TrackRepository>();
 
 
             builder.Services.AddScoped<AuthService>();
@@ -69,6 +71,7 @@ namespace SkillAssessmentPlatform.API
             builder.Services.AddScoped<ApplicantService>();
             builder.Services.AddScoped<ExaminerService>();
             builder.Services.AddScoped<UserService>();
+          
 
 
 

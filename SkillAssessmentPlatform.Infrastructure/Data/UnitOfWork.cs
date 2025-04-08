@@ -33,13 +33,16 @@ namespace SkillAssessmentPlatform.Infrastructure.Data
                 IAuthRepository authRepository,
                 IUserRepository userRepository,
                 IApplicantRepository applicantRepository,
-                IExaminerRepository examinerRepository)
+                IExaminerRepository examinerRepository,
+                ITrackRepository trackRepository
+            )
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _authRepository = authRepository;
             _userRepository = userRepository;
             _applicantRepository = applicantRepository;
             _examinerRepository = examinerRepository;
+          
 
         }
 
@@ -50,6 +53,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Data
         public IUserRepository UserRepository => _userRepository;
         public IApplicantRepository ApplicantRepository => _applicantRepository;
         public IExaminerRepository ExaminerRepository => _examinerRepository;
+        
         #endregion
 
         // دعم Repositories العامة
