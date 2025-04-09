@@ -1,32 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using SkillAssessmentPlatform.Core.Entities;
-using SkillAssessmentPlatform.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 using SkillAssessmentPlatform.Application.DTOs;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SkillAssessmentPlatform.Core.Entities;
+using SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation;
+using SkillAssessmentPlatform.Core.Interfaces;
 using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
+
 namespace SkillAssessmentPlatform.Application.Services
 {
     public class TrackService
     {
-        private readonly ITrackRepository _trackRepository;
-        private readonly AppDbContext appDbContext;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly AppDbContext _appDbContext;
+        private readonly ILogger<TrackService> _logger;
 
-        public TrackService(ITrackRepository trackRepository, AppDbContext appDbContext)
+        public TrackService(
+            IUnitOfWork unitOfWork,
+            AppDbContext appDbContext,
+            ILogger<TrackService> logger)
         {
-            _trackRepository = trackRepository;
-            this.appDbContext = appDbContext;
+            _unitOfWork = unitOfWork;
+            _appDbContext = appDbContext;
+            _logger = logger;
         }
 
-        // استرجاع جميع المسارات وتحويلها إلى DTO
+        // Get all tracks
         public async Task<IEnumerable<TrackDto>> GetAllTracksAsync()
         {
-            var tracks = await _trackRepository.GetAllAsync();
+            var tracks = await _unitOfWork.TrackRepository.GetAllAsync();
             return tracks.Select(t => new TrackDto
             {
                 Id = t.Id,
@@ -40,11 +45,12 @@ namespace SkillAssessmentPlatform.Application.Services
             });
         }
 
-        // استرجاع مسار محدد بالمعرف
+        // Get track by ID
         public async Task<TrackDto> GetTrackByIdAsync(int id)
         {
-            var track = await _trackRepository.GetByIdAsync(id);
+            var track = await _unitOfWork.TrackRepository.GetByIdAsync(id);
             if (track == null) return null;
+
             return new TrackDto
             {
                 Id = track.Id,
@@ -58,33 +64,32 @@ namespace SkillAssessmentPlatform.Application.Services
             };
         }
 
-        // إنشاء مسار جديد
+        // Create new track
         public async Task<TrackDto> CreateTrackAsync(TrackDto trackDto)
         {
             var track = new Track
             {
-                // Id يتم توليده من قاعدة البيانات
-              //  Id = trackDto.Id,
                 SeniorExaminerID = trackDto.SeniorExaminerID,
                 Name = trackDto.Name,
                 Description = trackDto.Description,
                 Objectives = trackDto.Objectives,
                 AssociatedSkills = trackDto.AssociatedSkills,
                 IsActive = trackDto.IsActive,
-                
                 Image = trackDto.Image,
-                CreatedAt = System.DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow
             };
-            ///>> assign role to senior examiner via examiner repo 
-            await _trackRepository.AddAsync(track);
+
+            await _unitOfWork.TrackRepository.AddAsync(track);
+            await _unitOfWork.SaveChangesAsync();
+
             trackDto.Id = track.Id;
             return trackDto;
         }
 
-        // تحديث بيانات مسار موجود
+        // Update existing track
         public async Task<bool> UpdateTrackAsync(int id, TrackDto trackDto)
         {
-            var track = await _trackRepository.GetByIdAsync(id);
+            var track = await _unitOfWork.TrackRepository.GetByIdAsync(id);
             if (track == null) return false;
 
             track.SeniorExaminerID = trackDto.SeniorExaminerID;
@@ -95,28 +100,32 @@ namespace SkillAssessmentPlatform.Application.Services
             track.IsActive = trackDto.IsActive;
             track.Image = trackDto.Image;
 
-            await _trackRepository.UpdateAsync(track);
+            await _unitOfWork.TrackRepository.UpdateAsync(track);
+            await _unitOfWork.SaveChangesAsync();
+
             return true;
         }
 
-        // حذف مسار
+        // Delete track
         public async Task<bool> DeleteTrackAsync(int id)
         {
-            var track = await _trackRepository.GetByIdAsync(id);
+            var track = await _unitOfWork.TrackRepository.GetByIdAsync(id);
             if (track == null) return false;
-            await _trackRepository.DeleteAsync(id);
+
+            await _unitOfWork.TrackRepository.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
-        // استرجاع المستويات الخاصة بمسار معين
+        // Get levels by track ID
         public async Task<IEnumerable<LevelDto>> GetLevelsByTrackIdAsync(int trackId)
         {
-            var levels = await _trackRepository.GetLevelsByTrackIdAsync(trackId);
-           
-            var data =  levels.Select(l => new LevelDto
+            var levels = await _unitOfWork.TrackRepository.GetLevelsByTrackIdAsync(trackId);
+
+            var data = levels.Select(l => new LevelDto
             {
                 Id = l.Id,
-                StageName = appDbContext.Stages.FirstOrDefault(x => x.LevelId == l.Id)?.Name??"Not found",
+                StageName = _appDbContext.Stages.FirstOrDefault(x => x.LevelId == l.Id)?.Name ?? "Not found",
                 TrackId = l.TrackId,
                 Name = l.Name,
                 Description = l.Description,
@@ -125,10 +134,9 @@ namespace SkillAssessmentPlatform.Application.Services
             }).ToList();
 
             return data;
-
         }
 
-        // إنشاء مستوى جديد داخل مسار
+        // Create new level inside a track
         public async Task<LevelDto> CreateLevelAsync(int trackId, LevelDto levelDto)
         {
             var level = new Level
@@ -139,24 +147,99 @@ namespace SkillAssessmentPlatform.Application.Services
                 Order = levelDto.Order,
                 IsActive = levelDto.IsActive
             };
-            await _trackRepository.AddLevelAsync(trackId, level);
+
+            await _unitOfWork.TrackRepository.AddLevelAsync(trackId, level);
+            await _unitOfWork.SaveChangesAsync();
+
             levelDto.Id = level.Id;
             levelDto.TrackId = trackId;
             return levelDto;
         }
 
-        // إسناد ممتحن لمسار
+        // Assign examiner to track
         public async Task<bool> AssignExaminerAsync(int trackId, ExaminerAssignmentDto assignmentDto)
         {
-            await _trackRepository.AssignExaminerAsync(trackId, assignmentDto.ExaminerId);
+            await _unitOfWork.TrackRepository.AssignExaminerAsync(trackId, assignmentDto.ExaminerId);
+            await _unitOfWork.SaveChangesAsync();
             return true;
         }
 
-        // إزالة ممتحن من مسار
+        // Remove examiner from track
         public async Task<bool> RemoveExaminerAsync(int trackId, string examinerId)
         {
-            await _trackRepository.RemoveExaminerAsync(trackId, examinerId);
+            await _unitOfWork.TrackRepository.RemoveExaminerAsync(trackId, examinerId);
+            await _unitOfWork.SaveChangesAsync();
             return true;
+        }
+
+        // Create full track structure (levels, stages, evaluation criteria)
+        public async Task<bool> CreateTrackStructureAsync(TrackStructureDTO structureDTO)
+        {
+            var track = await _unitOfWork.TrackRepository.GetByIdAsync(structureDTO.TrackId);
+            if (track == null)
+                throw new KeyNotFoundException($"Track with ID {structureDTO.TrackId} not found");
+
+            using (var transaction = await _unitOfWork.BeginTransactionAsync())
+            {
+                try
+                {
+                    foreach (var levelDTO in structureDTO.Levels)
+                    {
+                        var level = new Level
+                        {
+                            TrackId = structureDTO.TrackId,
+                            Name = levelDTO.Name,
+                            Description = levelDTO.Description,
+                            Order = levelDTO.Order,
+                            IsActive = true
+                        };
+
+                        await _unitOfWork.LevelRepository.AddAsync(level);
+                        await _unitOfWork.SaveChangesAsync();
+
+                        foreach (var stageDTO in levelDTO.Stages)
+                        {
+                            var stage = new Stage
+                            {
+                                LevelId = level.Id,
+                                Name = stageDTO.Name,
+                                Description = stageDTO.Description,
+                                Type = stageDTO.Type,
+                                Order = stageDTO.Order,
+                                IsActive = true,
+                                PassingScore = stageDTO.PassingScore
+                            };
+
+                            await _unitOfWork.StageRepository.AddAsync(stage);
+                            await _unitOfWork.SaveChangesAsync();
+
+                            foreach (var criteriaDTO in stageDTO.EvaluationCriteria)
+                            {
+                                var criteria = new EvaluationCriteria
+                                {
+                                    StageId = stage.Id,
+                                    Name = criteriaDTO.Name,
+                                    Description = criteriaDTO.Description,
+                                    Weight = criteriaDTO.Weight
+                                };
+
+                                await _unitOfWork.EvaluationCriteriaRepository.AddAsync(criteria);
+                            }
+
+                            await _unitOfWork.SaveChangesAsync();
+                        }
+                    }
+
+                    await transaction.CommitAsync();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error creating track structure for track ID {TrackId}", structureDTO.TrackId);
+                    throw new Exception("Failed to create track structure", ex);
+                }
+            }
         }
     }
 }

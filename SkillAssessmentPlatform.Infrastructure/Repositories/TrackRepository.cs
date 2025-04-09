@@ -8,10 +8,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using SkillAssessmentPlatform.Core.Entities;
+using SkillAssessmentPlatform.Core.Entities.Users;
+using SkillAssessmentPlatform.Core.Enums;
+using SkillAssessmentPlatform.Core.Exceptions;
+using SkillAssessmentPlatform.Core.Interfaces.Repository;
+using SkillAssessmentPlatform.Infrastructure.Data;
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
-    public class TrackRepository : GenericRepository<Track>, ITrackRepository
+    public class TrackRepository : GenericRepository<Track> , ITrackRepository
+
     {
         //private readonly AppDbContext _context;
 
