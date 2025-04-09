@@ -17,12 +17,22 @@ using SkillAssessmentPlatform.Core.Enums;
 using SkillAssessmentPlatform.Core.Exceptions;
 using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
+
 namespace SkillAssessmentPlatform.Infrastructure.Repositories
 {
     public class TrackRepository : GenericRepository<Track> , ITrackRepository
 
     {
         //private readonly AppDbContext _context;
+
+        public async Task<Track> GetTrackWithLevelsAsync(int trackId)
+        {
+            return await _context.Tracks
+                .Include(t => t.Levels)
+                    .ThenInclude(l => l.Stages)
+                        .ThenInclude(s => s.EvaluationCriteria)
+                .FirstOrDefaultAsync(t => t.Id == trackId);
+        }
 
         public TrackRepository(AppDbContext context) : base(context)
         {

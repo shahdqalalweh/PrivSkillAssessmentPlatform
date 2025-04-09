@@ -1,4 +1,5 @@
-﻿using System;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,7 +8,6 @@ using SkillAssessmentPlatform.Application.DTOs;
 using SkillAssessmentPlatform.Core.Entities;
 using SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation;
 using SkillAssessmentPlatform.Core.Interfaces;
-using SkillAssessmentPlatform.Core.Interfaces.Repository;
 using SkillAssessmentPlatform.Infrastructure.Data;
 
 namespace SkillAssessmentPlatform.Application.Services
@@ -28,7 +28,6 @@ namespace SkillAssessmentPlatform.Application.Services
             _logger = logger;
         }
 
-        // Get all tracks
         public async Task<IEnumerable<TrackDto>> GetAllTracksAsync()
         {
             var tracks = await _unitOfWork.TrackRepository.GetAllAsync();
@@ -45,11 +44,10 @@ namespace SkillAssessmentPlatform.Application.Services
             });
         }
 
-        // Get track by ID
         public async Task<TrackDto> GetTrackByIdAsync(int id)
         {
             var track = await _unitOfWork.TrackRepository.GetByIdAsync(id);
-            if (track == null) return null;
+           // if (track == null) return null;
 
             return new TrackDto
             {
@@ -64,7 +62,6 @@ namespace SkillAssessmentPlatform.Application.Services
             };
         }
 
-        // Create new track
         public async Task<TrackDto> CreateTrackAsync(TrackDto trackDto)
         {
             var track = new Track
@@ -86,7 +83,6 @@ namespace SkillAssessmentPlatform.Application.Services
             return trackDto;
         }
 
-        // Update existing track
         public async Task<bool> UpdateTrackAsync(int id, TrackDto trackDto)
         {
             var track = await _unitOfWork.TrackRepository.GetByIdAsync(id);
@@ -106,7 +102,6 @@ namespace SkillAssessmentPlatform.Application.Services
             return true;
         }
 
-        // Delete track
         public async Task<bool> DeleteTrackAsync(int id)
         {
             var track = await _unitOfWork.TrackRepository.GetByIdAsync(id);
@@ -117,7 +112,6 @@ namespace SkillAssessmentPlatform.Application.Services
             return true;
         }
 
-        // Get levels by track ID
         public async Task<IEnumerable<LevelDto>> GetLevelsByTrackIdAsync(int trackId)
         {
             var levels = await _unitOfWork.TrackRepository.GetLevelsByTrackIdAsync(trackId);
@@ -136,7 +130,22 @@ namespace SkillAssessmentPlatform.Application.Services
             return data;
         }
 
-        // Create new level inside a track
+        public async Task<Level> CreateLevelAsync(int trackId, CreateLevelDTO dto)
+        {
+            var track = await _unitOfWork.TrackRepository.GetTrackWithLevelsAsync(trackId);
+            var level = new Level
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Order = dto.Order,
+                IsActive = dto.IsActive,
+                TrackId = trackId
+            };
+            track.Levels.Add(level);
+            await _unitOfWork.TrackRepository.UpdateAsync(track);
+            return level;
+        }
+
         public async Task<LevelDto> CreateLevelAsync(int trackId, LevelDto levelDto)
         {
             var level = new Level
@@ -156,7 +165,6 @@ namespace SkillAssessmentPlatform.Application.Services
             return levelDto;
         }
 
-        // Assign examiner to track
         public async Task<bool> AssignExaminerAsync(int trackId, ExaminerAssignmentDto assignmentDto)
         {
             await _unitOfWork.TrackRepository.AssignExaminerAsync(trackId, assignmentDto.ExaminerId);
@@ -164,7 +172,6 @@ namespace SkillAssessmentPlatform.Application.Services
             return true;
         }
 
-        // Remove examiner from track
         public async Task<bool> RemoveExaminerAsync(int trackId, string examinerId)
         {
             await _unitOfWork.TrackRepository.RemoveExaminerAsync(trackId, examinerId);
@@ -172,7 +179,6 @@ namespace SkillAssessmentPlatform.Application.Services
             return true;
         }
 
-        // Create full track structure (levels, stages, evaluation criteria)
         public async Task<bool> CreateTrackStructureAsync(TrackStructureDTO structureDTO)
         {
             var track = await _unitOfWork.TrackRepository.GetByIdAsync(structureDTO.TrackId);
@@ -240,6 +246,50 @@ namespace SkillAssessmentPlatform.Application.Services
                     throw new Exception("Failed to create track structure", ex);
                 }
             }
+        }
+
+        public async Task<TrackStructureDTO> GetLevelsWithStagesAsync(int trackId)
+        {
+            var track = await _unitOfWork.TrackRepository.GetTrackWithLevelsAsync(trackId);
+            return new TrackStructureDTO
+            {
+                TrackId = track.Id,
+                TrackName = track.Name,
+                Levels = track.Levels.Select(l => new LevelStructureDTO
+                {
+                    LevelId = l.Id,
+                    LevelName = l.Name,
+                    Stages = l.Stages.Select(s => new StageCriteriaDTO
+                    {
+                        StageId = s.Id,
+                        StageName = s.Name,
+                        StageType = s.Type.ToString(),
+                        EvaluationCriteria = new List<string>()
+                    }).ToList()
+                }).ToList()
+            };
+        }
+
+        public async Task<TrackStructureDTO> GetLevelsStagesCriteriaAsync(int trackId)
+        {
+            var track = await _unitOfWork.TrackRepository.GetTrackWithLevelsAsync(trackId);
+            return new TrackStructureDTO
+            {
+                TrackId = track.Id,
+                TrackName = track.Name,
+                Levels = track.Levels.Select(l => new LevelStructureDTO
+                {
+                    LevelId = l.Id,
+                    LevelName = l.Name,
+                    Stages = l.Stages.Select(s => new StageCriteriaDTO
+                    {
+                        StageId = s.Id,
+                        StageName = s.Name,
+                        StageType = s.Type.ToString(),
+                        EvaluationCriteria = s.EvaluationCriteria?.Select(ec => ec.Name).ToList() ?? new List<string>()
+                    }).ToList()
+                }).ToList()
+            };
         }
     }
 }
