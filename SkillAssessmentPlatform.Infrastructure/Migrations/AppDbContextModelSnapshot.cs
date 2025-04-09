@@ -34,7 +34,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("WorkingTracksId");
 
-                    b.ToTable("ExaminerTrack");
+                    b.ToTable("ExaminerTrack", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -227,7 +227,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("LevelProgressId");
 
-                    b.ToTable("Certificates");
+                    b.ToTable("Certificates", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Certificates_and_Notifications.Notification", b =>
@@ -260,7 +260,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notification");
+                    b.ToTable("Notification", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Enrollment", b =>
@@ -291,7 +291,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("Enrollments");
+                    b.ToTable("Enrollments", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.DetailedFeedback", b =>
@@ -324,7 +324,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("FeedbackId");
 
-                    b.ToTable("DetailedFeedbacks");
+                    b.ToTable("DetailedFeedbacks", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.EvaluationCriteria", b =>
@@ -353,7 +353,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("StageId");
 
-                    b.ToTable("EvaluationCriteria");
+                    b.ToTable("EvaluationCriteria", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Feedback_and_Evaluation.Feedback", b =>
@@ -382,7 +382,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("ExaminerId");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("Feedbacks", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Level", b =>
@@ -414,7 +414,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("TrackId");
 
-                    b.ToTable("Levels");
+                    b.ToTable("Levels", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.LevelProgress", b =>
@@ -447,7 +447,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("LevelId");
 
-                    b.ToTable("LevelProgresses");
+                    b.ToTable("LevelProgresses", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Stage", b =>
@@ -486,7 +486,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("LevelId");
 
-                    b.ToTable("Stages");
+                    b.ToTable("Stages", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.StageProgress", b =>
@@ -534,7 +534,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("StageId");
 
-                    b.ToTable("StageProgresses");
+                    b.ToTable("StageProgresses", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Appointment", b =>
@@ -562,7 +562,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("ExaminerId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointments", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Exam", b =>
@@ -592,7 +592,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.HasIndex("StageId")
                         .IsUnique();
 
-                    b.ToTable("Exams");
+                    b.ToTable("Exams", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.ExamRequest", b =>
@@ -627,7 +627,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.HasIndex("FeedbackId")
                         .IsUnique();
 
-                    b.ToTable("ExamRequests");
+                    b.ToTable("ExamRequests", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Interview", b =>
@@ -656,7 +656,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
                     b.HasIndex("StageId")
                         .IsUnique();
 
-                    b.ToTable("Interviews");
+                    b.ToTable("Interviews", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.InterviewBook", b =>
@@ -699,7 +699,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("InterviewId");
 
-                    b.ToTable("InterviewBooks");
+                    b.ToTable("InterviewBooks", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.Task", b =>
@@ -736,7 +736,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("TasksPoolId");
 
-                    b.ToTable("Tasks");
+                    b.ToTable("Tasks", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskApplicant", b =>
@@ -768,7 +768,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("TaskApplicants");
+                    b.ToTable("TaskApplicants", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TaskSubmission", b =>
@@ -799,7 +799,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("TaskApplicantId");
 
-                    b.ToTable("TaskSubmissions");
+                    b.ToTable("TaskSubmissions", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Tasks__Exams__and_Interviews.TasksPool", b =>
@@ -828,7 +828,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("StageId");
 
-                    b.ToTable("TasksPools");
+                    b.ToTable("TasksPools", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Track", b =>
@@ -873,7 +873,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasIndex("SeniorExaminerID");
 
-                    b.ToTable("Tracks");
+                    b.ToTable("Tracks", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.ExaminerLoad", b =>
@@ -895,7 +895,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Migrations
 
                     b.HasKey("ExaminerID", "Type");
 
-                    b.ToTable("ExaminerLoads");
+                    b.ToTable("ExaminerLoads", (string)null);
                 });
 
             modelBuilder.Entity("SkillAssessmentPlatform.Core.Entities.Users.User", b =>

@@ -25,7 +25,7 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
     {
         //private readonly AppDbContext _context;
 
-        public async Task<Track> GetTrackWithLevelsAsync(int trackId)
+        public async Task<Track> GetTrackWithDetailsAsync(int trackId)
         {
             return await _context.Tracks
                 .Include(t => t.Levels)
@@ -185,6 +185,11 @@ namespace SkillAssessmentPlatform.Infrastructure.Repositories
         }
 
         public Task RemoveExaminerAsync(int trackId, string examinerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Track> GetTrackWithLevelsAsync(int trackId)
         {
             throw new NotImplementedException();
         }
